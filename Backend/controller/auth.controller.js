@@ -42,7 +42,7 @@ exports.loginController = asyncHandler(async (req, res) => {
 
   const token = generateToken(user._id);
 
-  apiResponse(res, 200, "User logged in successfully", user);
+  apiResponse(res, 200, "User logged in successfully", { user, token });
 });
 
 exports.logoutController = asyncHandler(async (req, res) => {

@@ -110,6 +110,7 @@
     "side-channel-weakmap": "^1.0.2",
     "sift": "^16.0.1",
     "simple-update-notifier": "^2.0.0",
+    "slugify": "^1.6.9",
     "smart-buffer": "^4.2.0",
     "socks": "^2.8.9",
     "sparse-bitfield": "^3.0.3",
