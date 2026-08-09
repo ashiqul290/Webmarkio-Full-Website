@@ -27,3 +27,13 @@ exports.contactController = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getContactsController = async (req, res, next) => {
+  try {
+    const contacts = await Contact.find({}).sort({ createdAt: -1 });
+
+    return apiResponse(res, 200, 'Contacts fetched successfully.', contacts);
+  } catch (error) {
+    next(error);
+  }
+};
