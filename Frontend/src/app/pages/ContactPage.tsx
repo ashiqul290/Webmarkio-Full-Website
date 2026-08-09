@@ -4,6 +4,8 @@ import { Mail, Phone, MapPin, MessageCircle, Clock, CheckCircle } from "lucide-r
 import { PageTransition } from "../components/shared/PageTransition";
 import { services } from "../../data/services";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5100/routes/api";
+
 const contactMethods = [
   { icon: Mail, label: "Email", value: "contact.webmarkio@gmail.com", href: "mailto:contact.webmarkio@gmail.com", description: "Response within 2 hours" },
   { icon: Phone, label: "Phone", value: "+8801346047100", href: "tel:+8801346047100", description: "Any time" },
@@ -14,12 +16,34 @@ const contactMethods = [
 export function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", service: "", budget: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const serviceOptions = services.map((service) => service.title);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    // console.log("Form submitted:", form);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result?.message || "Failed to submit contact form");
+      }
+
+      setSubmitted(true);
+      console.log("Form submitted successfully:", result);
+    } catch (error) {
+      console.error("Contact form submission failed:", error);
+      alert(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -142,9 +166,10 @@ export function ContactPage() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-4 bg-[#2563EB] text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-[#2563EB] text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    Send Message — We'll Reply Within 2 Hours
+                    {isSubmitting ? "Sending..." : "Send Message — We'll Reply Within 2 Hours"}
                   </button>
                   <p className="text-xs text-center text-slate-400">By submitting, you agree to our Privacy Policy. No spam, ever.</p>
                 </form>
