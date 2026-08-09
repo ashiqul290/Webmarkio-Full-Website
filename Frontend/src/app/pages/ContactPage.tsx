@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { Mail, Phone, MapPin, MessageCircle, Clock, CheckCircle } from "lucide-react";
 import { PageTransition } from "../components/shared/PageTransition";
+import { services } from "../../data/services";
 
 const contactMethods = [
   { icon: Mail, label: "Email", value: "contact.webmarkio@gmail.com", href: "mailto:contact.webmarkio@gmail.com", description: "Response within 2 hours" },
@@ -13,6 +14,7 @@ const contactMethods = [
 export function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", service: "", budget: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const serviceOptions = services.map((service) => service.title);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,12 +106,11 @@ export function ContactPage() {
                         className="w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-[#1E293B] dark:text-white focus:outline-none focus:border-[#2563EB] transition-colors"
                       >
                         <option value="" className="dark:text-black">Select a service</option>
-                        <option className="dark:text-black">Website Development</option>
-                        <option className="dark:text-black">Facebook Ads</option>
-                        <option className="dark:text-black">Google Ads</option>
-                        <option className="dark:text-black">SEO</option>
-                        <option className="dark:text-black">Branding</option>
-                        <option className="dark:text-black">Full Digital Package</option>
+                        {serviceOptions.map((service) => (
+                          <option key={service} value={service} className="dark:text-black">
+                            {service}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

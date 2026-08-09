@@ -5,6 +5,7 @@ import sultana from '../app/assets/sultana.jpeg'
  import ibrahim from '../app/assets/ibrahim.jpeg'
 import shaon from "../app/assets/shaon.jpg";
 import Shahriear from "../app/assets/shahariear.jpg";
+import mehed from "../app/assets/Mehedi Hasan friend.webp";
 
 export const teamMembers: TeamMember[] = [
   {
@@ -26,31 +27,39 @@ export const teamMembers: TeamMember[] = [
   {
     id: "3",
     name: "Sultana Akter",
-    role: "Creative Director",
+    role: "Digital Marketing Specialist",
     bio: "Experienced Digital Marketing Expert with 6+ years of helping businesses grow through SEO, social media marketing, paid advertising, and performance-driven digital strategies.",
     image: sultana,
     social: { facebook: "#", linkedin: "#", whatsapp: "#", twitter: "#" },
   },
   {
     id: "4",
+    name: "Mehedi Hasan ",
+    role: "Frontend Developer",
+    bio: "Technical SEO specialist who has taken 30+ websites from page 5 to page 1. Priya's systematic approach to organic search has generated $10M+ in pipeline for clients.",
+    image: mehed,
+    social: { facebook: "#", linkedin: "#", whatsapp: "#", twitter: "#" },
+  },
+  {
+    id: "5",
     name: "Shoaon Ahmed",
-    role: "SEO Director",
+    role: "Frontend Developer",
     bio: "Technical SEO specialist who has taken 30+ websites from page 5 to page 1. Priya's systematic approach to organic search has generated $10M+ in pipeline for clients.",
     image: shaon,
     social: { facebook: "#", linkedin: "#", whatsapp: "#", twitter: "#" },
   },
   {
-    id: "5",
+    id: "6",
     name: "Dipak Chandra Das",
-    role: "Lead Developer",
+    role: "Mern Stack Developer",
     bio: "Full-stack engineer with deep expertise in React, Node.js, and cloud architecture. James ensures every site we build is not just beautiful but fast, secure, and scalable.",
     image: dipok,
     social: { facebook: "#", linkedin: "#", whatsapp: "#", github: "#" },
   },
   {
-    id: "6",
+    id: "7",
     name: "Shahriear Al Amin",
-    role: "Project Manager",
+    role: "Full Stack Developer",
     bio: "PMP-certified project manager with 4 years of delivering complex digital projects on time and on budget. Sophie keeps teams aligned and clients informed every step of the way.",
     image: Shahriear,
     social: { facebook: "#", linkedin: "#", whatsapp: "#" },
