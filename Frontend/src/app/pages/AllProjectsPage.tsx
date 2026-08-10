@@ -1,15 +1,45 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { portfolioCategories, portfolioItems } from "../../data/portfolio";
 import { PageTransition } from "../components/shared/PageTransition";
 
 export function AllProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const categoryListRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   const filteredProjects = selectedCategory === "All"
     ? portfolioItems
     : portfolioItems.filter((project) => project.category === selectedCategory);
+
+  const updateScrollButtons = () => {
+    const categoryList = categoryListRef.current;
+    if (!categoryList) return;
+
+    setCanScrollLeft(categoryList.scrollLeft > 1);
+    setCanScrollRight(
+      categoryList.scrollLeft + categoryList.clientWidth < categoryList.scrollWidth - 1,
+    );
+  };
+
+  useEffect(() => {
+    const categoryList = categoryListRef.current;
+    if (!categoryList) return;
+
+    updateScrollButtons();
+    const resizeObserver = new ResizeObserver(updateScrollButtons);
+    resizeObserver.observe(categoryList);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const scrollCategories = (direction: "left" | "right") => {
+    categoryListRef.current?.scrollBy({
+      left: direction === "right" ? 320 : -320,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <PageTransition>
@@ -24,21 +54,47 @@ export function AllProjectsPage() {
 
       <section className="py-24 bg-white dark:bg-[#0F172A]">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 flex flex-wrap items-center justify-center gap-3">
-            {portfolioCategories.map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setSelectedCategory(category)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition ${
-                  selectedCategory === category
-                    ? "bg-[#2563EB] text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+          <div className="mb-10 flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Show previous project services"
+              onClick={() => scrollCategories("left")}
+              disabled={!canScrollLeft}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-[#2563EB] disabled:cursor-not-allowed disabled:opacity-35 dark:border-slate-700 dark:text-slate-200 dark:hover:border-blue-500/50 dark:hover:bg-slate-800"
+            >
+              <ArrowLeft className="size-5" />
+            </button>
+
+            <div
+              ref={categoryListRef}
+              onScroll={updateScrollButtons}
+              className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto scroll-smooth py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {portfolioCategories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  className={`shrink-0 whitespace-nowrap px-5 py-2 rounded-full text-sm font-semibold transition ${
+                    selectedCategory === category
+                      ? "bg-[#2563EB] text-white"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              aria-label="Show more project services"
+              onClick={() => scrollCategories("right")}
+              disabled={!canScrollRight}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-[#2563EB] disabled:cursor-not-allowed disabled:opacity-35 dark:border-slate-700 dark:text-slate-200 dark:hover:border-blue-500/50 dark:hover:bg-slate-800"
+            >
+              <ArrowRight className="size-5" />
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
