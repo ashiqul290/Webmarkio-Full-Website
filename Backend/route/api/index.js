@@ -8,7 +8,7 @@ const api = express.Router();
 
 api.use('/auth', auth);
 api.use('/team', team);
-api.use('/service',service)
+api.use('/services',service)
 api.use('/projects', projects);
 api.use('/contact', contact);
 
