@@ -28,7 +28,15 @@ import { ClientReviewPage } from "./pages/ClientReviewPage";
 import TermsPageNew from "./pages/TermsPageUpdate";
 import ClientMeetingsPage from "./pages/ClientMeetingsPage";
 import { LoginPage, SignupPage } from "./pages/AuthPages";
-import { AdminDashboard, AdminLayout, AdminProjectsPage, AdminTeamPage } from "./pages/AdminPages";
+import { AdminLayout, AdminProjectsPage, AdminTeamPage } from "./pages/AdminPages";
+import { AdminAccess } from "./pages/AdminAccess";
+import {
+  AdminContactsPage,
+  AdminHomePage,
+  AdminProfilePage,
+  AdminServicesPage,
+  AdminUsersPage,
+} from "./pages/AdminManagementPages";
 import AdminMain from "./Admin/AdminMain";
 
 function ScrollToTop() {
@@ -99,10 +107,15 @@ function AppLayout() {
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminAccess><AdminLayout /></AdminAccess>}>
+          <Route index element={<AdminHomePage />} />
+          <Route path="profile" element={<AdminProfilePage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="services" element={<AdminServicesPage />} />
+          <Route path="contacts" element={<AdminContactsPage />} />
           <Route path="projects" element={<AdminProjectsPage />} />
           <Route path="team" element={<AdminTeamPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         {/* <Route path="/admin" element={<AdminMain />} /> */}

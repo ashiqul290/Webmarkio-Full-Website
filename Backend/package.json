@@ -131,7 +131,9 @@
   },
   "scripts": {
     "start": "nodemon index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed:admin": "node scripts/seedAdmin.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",

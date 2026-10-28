@@ -9,12 +9,15 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
+      trim: true,
+      lowercase: true,
       required: [true, "email is required"],
-      unique: [true, "email already in use"],
+      unique: true,
     },
     password: {
       type: String,
       required: [true, "password is required"],
+      select: false,
     },
     phone: {
       type: String,
@@ -24,10 +27,29 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    status: {
+      type: String,
+      enum: ["active", "suspended"],
+      default: "active",
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
   },
   {
     timestamps: true,
   },
 );
+
+userSchema.set("toJSON", {
+  transform(_document, returned) {
+    delete returned.password;
+    delete returned.tokenVersion;
+    delete returned.__v;
+    return returned;
+  },
+});
 
 module.exports = mongoose.model("user", userSchema);

@@ -1,11 +1,19 @@
 const express = require('express');
-const { signupController, loginController, logoutController } = require('../../../controller/auth.controller');
+const {
+  signupController,
+  loginController,
+  logoutController,
+  currentUserController,
+} = require('../../../controller/auth.controller');
+const { protect } = require('../../../middleware/auth.middleware');
+const authRateLimit = require('../../../middleware/authRateLimit');
 const auth = express.Router();
 
-auth.post('/signup', signupController);
+auth.post('/signup', authRateLimit, signupController);
 
-auth.post('/login', loginController);
+auth.post('/login', authRateLimit, loginController);
 
-auth.post('/logout', logoutController);
+auth.get('/me', protect, currentUserController);
+auth.post('/logout', protect, logoutController);
 
 module.exports = auth;
