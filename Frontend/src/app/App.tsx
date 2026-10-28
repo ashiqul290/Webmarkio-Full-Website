@@ -69,9 +69,11 @@ function SiteLayout() {
 }
 
 function AppLayout() {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <CustomCursor />
+      {location.pathname !== "/login" && location.pathname !== "/signup" && <CustomCursor />}
       <ScrollToTop />
       <Routes>
         <Route element={<SiteLayout />}>

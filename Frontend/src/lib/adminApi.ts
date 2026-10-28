@@ -24,7 +24,7 @@ export type Project = {
 };
 
 function getToken() {
-  return localStorage.getItem("webmarkio_auth_token");
+  return localStorage.getItem("webmarkio_auth_token") || sessionStorage.getItem("webmarkio_auth_token");
 }
 
 async function request<T>(path: string, options: RequestInit = {}) {

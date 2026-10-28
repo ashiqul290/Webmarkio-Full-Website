@@ -27,7 +27,9 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const user = (() => {
     try {
-      return JSON.parse(localStorage.getItem("webmarkio_user") || "{}") as { name?: string; email?: string };
+      return JSON.parse(
+        localStorage.getItem("webmarkio_user") || sessionStorage.getItem("webmarkio_user") || "{}",
+      ) as { name?: string; email?: string };
     } catch {
       return {};
     }
@@ -36,6 +38,8 @@ export function AdminLayout() {
   const logout = () => {
     localStorage.removeItem("webmarkio_auth_token");
     localStorage.removeItem("webmarkio_user");
+    sessionStorage.removeItem("webmarkio_auth_token");
+    sessionStorage.removeItem("webmarkio_user");
     navigate("/login");
   };
   const pageTitle = location.pathname.includes("/team") ? "Team Management" : location.pathname.includes("/projects") ? "Project Management" : "Dashboard";
