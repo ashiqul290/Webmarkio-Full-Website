@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { ArrowRight, Globe, Briefcase, Target, Palette, Zap, UtensilsCrossed, GraduationCap, Heart, ShoppingCart, TrendingUp, Search, BarChart2, Sparkles, Layers, Building2 } from "lucide-react";
 import { services, serviceCategories } from "../../data/services";
+import type { Service } from "../../types";
+import { adminApi } from "../../lib/adminApi";
 import { SectionHeading } from "../components/shared/SectionHeading";
 import { PageTransition } from "../components/shared/PageTransition";
 import { CTASection } from "../components/home/CTASection";
@@ -14,7 +16,45 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const filtered = activeCategory === "All" ? services : services.filter(s => s.category === activeCategory);
+  const [remoteServices, setRemoteServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState(serviceCategories);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    Promise.all([adminApi.getServices(), adminApi.getServiceCategories()])
+      .then(([loadedServices, loadedCategories]) => {
+        const merged = loadedServices.map((service) => {
+          const existing = services.find((item) => item.slug === service.slug);
+          return {
+            ...existing,
+            ...service,
+            id: service._id,
+            features: service.features ?? existing?.features ?? [],
+            benefits: service.benefits ?? existing?.benefits ?? [],
+            process: service.process ?? existing?.process ?? [],
+            image: service.image || existing?.image || "",
+          };
+        });
+        setRemoteServices(merged);
+        setCategories([
+          "All",
+          ...new Set([
+            ...serviceCategories.slice(1),
+            ...loadedCategories,
+            ...merged.map((service) => service.category),
+          ]),
+        ]);
+      })
+      .catch((error: Error) => setLoadError(error.message));
+  }, []);
+
+  const displayedServices = [
+    ...services.filter((service) => !remoteServices.some((remote) => remote.slug === service.slug)),
+    ...remoteServices,
+  ];
+  const filtered = activeCategory === "All"
+    ? displayedServices
+    : displayedServices.filter((service) => service.category === activeCategory);
 
   return (
     <PageTransition>
@@ -39,7 +79,7 @@ export function ServicesPage() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Category Filter */}
           <div className="flex flex-wrap justify-center gap-2 mb-14">
-            {serviceCategories.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
@@ -54,6 +94,7 @@ export function ServicesPage() {
             ))}
           </div>
 
+          {loadError && <p role="status" className="mb-6 text-center text-sm text-slate-500">Showing saved services where available. {loadError}</p>}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((service, i) => {
               const Icon = iconMap[service.icon] || Globe;

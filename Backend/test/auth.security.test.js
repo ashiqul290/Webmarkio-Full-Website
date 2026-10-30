@@ -11,6 +11,7 @@ const app = require("../index");
 const UserModel = require("../model/User.model");
 const ProjectModel = require("../model/projects.model");
 const ServiceModel = require("../model/service.model");
+const ServiceCategoryModel = require("../model/serviceCategory.model");
 const ContactModel = require("../model/contact.model");
 const BannerModel = require("../model/banner.model");
 const TestimonialsContentModel = require("../model/testimonials.model");
@@ -84,8 +85,69 @@ test("auth and admin endpoints enforce server-verified roles", async (t) => {
     await t.test("unauthenticated requests are denied by admin APIs", async () => {
       const overview = await request("/admin/overview");
       const contacts = await request("/contact/all-contact");
+      const serviceCategoryUpdate = await request("/services/categories", {
+        method: "PUT",
+        body: { categories: ["Web Development"] },
+      });
       assert.equal(overview.status, 401);
       assert.equal(contacts.status, 401);
+      assert.equal(serviceCategoryUpdate.status, 401);
+    });
+
+    await t.test("regular users cannot update service categories", async () => {
+      const response = await request("/services/categories", {
+        token: bearer(ids.user),
+        method: "PUT",
+        body: { categories: ["Web Development"] },
+      });
+      assert.equal(response.status, 403);
+    });
+
+    await t.test("service categories are public to read and admins cannot remove categories in use", async () => {
+      const originalFindById = ServiceCategoryModel.findById;
+      const originalFindByIdAndUpdate = ServiceCategoryModel.findByIdAndUpdate;
+      const originalDistinct = ServiceModel.distinct;
+      let storedContent = null;
+      ServiceCategoryModel.findById = () => ({ lean: async () => storedContent });
+      ServiceCategoryModel.findByIdAndUpdate = (_id, update) => ({
+        lean: async () => {
+          storedContent = update.$set;
+          return storedContent;
+        },
+      });
+      ServiceModel.distinct = async () => ["Website Development"];
+
+      try {
+        const publicResponse = await request("/services/categories");
+        assert.equal(publicResponse.status, 200);
+        assert.deepEqual(publicResponse.body.data, [
+          "Web Development",
+          "Digital Marketing",
+          "Graphic Design",
+          "Website Development",
+        ]);
+
+        const rejectedRemoval = await request("/services/categories", {
+          token: bearer(ids.admin),
+          method: "PUT",
+          body: { categories: ["Web Development", "Digital Marketing", "Graphic Design"] },
+        });
+        assert.equal(rejectedRemoval.status, 409);
+
+        const update = await request("/services/categories", {
+          token: bearer(ids.admin),
+          method: "PUT",
+          body: {
+            categories: ["Web Development", "Digital Marketing", "Graphic Design", "Website Development"],
+          },
+        });
+        assert.equal(update.status, 200);
+        assert.equal(storedContent.initialized, true);
+      } finally {
+        ServiceCategoryModel.findById = originalFindById;
+        ServiceCategoryModel.findByIdAndUpdate = originalFindByIdAndUpdate;
+        ServiceModel.distinct = originalDistinct;
+      }
     });
 
     await t.test("homepage banner content is public to read and restricted to admin updates", async (t) => {

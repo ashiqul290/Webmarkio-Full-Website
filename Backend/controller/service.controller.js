@@ -30,11 +30,13 @@ exports.AddServiceController = asyncHandler(async (req, res) => {
 });
 
 exports.getAllServices = asyncHandler(async (req, res) => {
+  res.set("Cache-Control", "no-store");
   const services = await Service.find().sort({ createdAt: -1 });
   return apiResponse(res, 200, "Services fetched successfully", services);
 });
 
 exports.getServiceBySlug = asyncHandler(async (req, res) => {
+  res.set("Cache-Control", "no-store");
   const service = await Service.findOne({ slug: req.params.slug.toLowerCase() });
   if (!service) return apiResponse(res, 404, "Service not found", null);
 

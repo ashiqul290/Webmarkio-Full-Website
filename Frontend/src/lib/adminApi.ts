@@ -74,7 +74,12 @@ export type Service = {
   category: string;
   price: string;
   image: string;
+  features?: string[];
+  benefits?: string[];
+  process?: { step: number; title: string; description: string }[];
 };
+
+export type ServiceCategory = string;
 
 export type ContactSubmission = {
   _id: string;
@@ -180,6 +185,13 @@ export const adminApi = {
   deleteProject: (id: string) =>
     request<Project>(`/projects/delete-project/${id}`, { method: "DELETE" }),
   getServices: () => request<Service[]>("/services/all-services"),
+  getServiceCategories: () => request<ServiceCategory[]>("/services/categories"),
+  updateServiceCategories: (categories: ServiceCategory[]) =>
+    request<ServiceCategory[]>("/services/categories", {
+      method: "PUT",
+      body: JSON.stringify({ categories }),
+    }),
+  getServiceBySlug: (slug: string) => request<Service>(`/services/single-service/${encodeURIComponent(slug)}`),
   addService: (service: Omit<Service, "_id">) =>
     request<Service>("/services/add-service", { method: "POST", body: JSON.stringify(service) }),
   updateService: (id: string, service: Omit<Service, "_id">) =>

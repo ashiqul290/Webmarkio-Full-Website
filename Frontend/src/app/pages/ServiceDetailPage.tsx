@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router";
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, CheckCircle, ExternalLink, Globe, Briefcase, Target, Palette, Zap, UtensilsCrossed, GraduationCap, Heart, ShoppingCart, TrendingUp, Search, BarChart2, Sparkles, Layers, Building2 } from "lucide-react";
 import { getServiceBySlug } from "../../data/services";
+import { adminApi, type Service as AdminService } from "../../lib/adminApi";
 import { portfolioItems } from "../../data/portfolio";
 import { pricingPlans } from "../../data/pricing";
 import { PageTransition } from "../components/shared/PageTransition";
@@ -65,9 +67,74 @@ const businessWebsitePlans = [
 
 export function ServiceDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const service = getServiceBySlug(slug || "");
+  const staticService = getServiceBySlug(slug || "");
+  const [databaseService, setDatabaseService] = useState<AdminService | null>(null);
+  const [lookupComplete, setLookupComplete] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+    setLookupComplete(false);
+    adminApi.getServiceBySlug(slug || "")
+      .then((service) => { if (active) setDatabaseService(service); })
+      .catch((error: Error) => {
+        if (active && !staticService && (!("status" in error) || error.status !== 404)) {
+          console.error("Unable to load service details:", error.message);
+        }
+      })
+      .finally(() => { if (active) setLookupComplete(true); });
+    return () => { active = false; };
+  }, [slug, staticService]);
+
+  const service = staticService ?? databaseService;
+
+  if (!service && !lookupComplete) {
+    return <PageTransition><div className="min-h-[60vh] flex items-center justify-center text-slate-500">Loading service…</div></PageTransition>;
+  }
   if (!service) return <NotFoundPage />;
+
+  if (!staticService && databaseService) {
+    const Icon = iconMap[databaseService.icon] || Globe;
+    return (
+      <PageTransition>
+        <section className="pt-32 pb-20 bg-[#0F172A]">
+          <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8">
+            <Link to="/services" className="mb-8 inline-flex items-center gap-2 text-slate-400 hover:text-white">
+              <ArrowLeft className="h-4 w-4" /> Back to Services
+            </Link>
+            <div className="grid items-center gap-10 md:grid-cols-2">
+              <div>
+                <div className="mb-5 flex items-center gap-3 text-blue-300">
+                  <Icon className="h-6 w-6" /> {databaseService.category}
+                </div>
+                <h1 className="mb-4 text-4xl font-bold text-white">{databaseService.title}</h1>
+                <p className="mb-6 leading-relaxed text-slate-300">{databaseService.description}</p>
+                <p className="mb-6 text-lg font-semibold text-blue-300">{databaseService.price}</p>
+                <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-6 py-3 font-semibold text-white">
+                  Get Started <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+              {databaseService.image && <img src={databaseService.image} alt={databaseService.title} className="w-full rounded-2xl border border-white/10 object-cover" />}
+            </div>
+          </div>
+        </section>
+        <section className="bg-white py-16 dark:bg-[#0F172A]">
+          <div className="mx-auto max-w-[1100px] px-4 sm:px-6 lg:px-8">
+            <h2 className="mb-6 text-2xl font-bold text-[#0F172A] dark:text-white">What's Included</h2>
+            {databaseService.features?.length ? (
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {databaseService.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2 rounded-xl bg-slate-50 p-4 text-slate-700 dark:bg-white/5 dark:text-slate-200">
+                    <CheckCircle className="h-4 w-4 shrink-0 text-[#22C55E]" />{feature}
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="text-slate-500">Contact us to discuss the service details.</p>}
+          </div>
+        </section>
+        <CTASection />
+      </PageTransition>
+    );
+  }
 
   const Icon = iconMap[service.icon] || Globe;
   const relatedProjects = service.category === "Website Development"

@@ -13,6 +13,7 @@ import {
   type AdminUser,
   type ContactSubmission,
   type Service,
+  type ServiceCategory,
 } from "../../lib/adminApi";
 
 const cardClass = "rounded-2xl border border-white/[0.08] bg-[#17171F] p-5";
@@ -264,21 +265,56 @@ const emptyService: Omit<Service, "_id"> = {
 
 export function AdminServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [categoryDraft, setCategoryDraft] = useState("");
   const [draft, setDraft] = useState<Omit<Service, "_id">>(emptyService);
   const [editingId, setEditingId] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingCategories, setSavingCategories] = useState(false);
   const [error, setError] = useState("");
 
   const loadServices = () => {
     setLoading(true);
-    adminApi.getServices()
-      .then(setServices)
+    Promise.all([adminApi.getServices(), adminApi.getServiceCategories()])
+      .then(([loadedServices, loadedCategories]) => {
+        setServices(loadedServices);
+        setCategories(loadedCategories);
+      })
       .catch((requestError: Error) => setError(requestError.message))
       .finally(() => setLoading(false));
   };
   useEffect(loadServices, []);
+
+  const addCategory = () => {
+    const category = categoryDraft.trim();
+    if (!category || categories.some((item) => item.toLocaleLowerCase() === category.toLocaleLowerCase())) return;
+    setCategories((current) => [...current, category]);
+    setCategoryDraft("");
+    setError("");
+  };
+
+  const removeCategory = (category: string) => {
+    if (services.some((service) => service.category.toLocaleLowerCase() === category.toLocaleLowerCase())) {
+      setError(`Move or delete services in "${category}" before removing that category.`);
+      return;
+    }
+    setCategories((current) => current.filter((item) => item !== category));
+    setError("");
+  };
+
+  const saveCategories = async () => {
+    setSavingCategories(true);
+    setError("");
+    try {
+      setCategories(await adminApi.updateServiceCategories(categories));
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to save categories.");
+    } finally {
+      setSavingCategories(false);
+    }
+  };
 
   const edit = (service?: Service) => {
     setEditingId(service?._id ?? "");
@@ -359,6 +395,33 @@ export function AdminServicesPage() {
         </button>
       </div>
       {error && <LoadError text={error} />}
+      <section className={`${cardClass} mb-5`}>
+        <h3 className="text-base font-semibold text-white">Service categories</h3>
+        <p className="mt-1 text-sm text-zinc-400">Create categories, then assign each service to one category.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <span key={category} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#101016] px-3 py-1.5 text-sm text-zinc-200">
+              {category}
+              <button type="button" aria-label={`Remove ${category}`} onClick={() => removeCategory(category)} className="text-zinc-400 hover:text-rose-300">×</button>
+            </span>
+          ))}
+          {!categories.length && <span className="text-sm text-zinc-500">No categories yet.</span>}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <input
+            aria-label="New service category"
+            value={categoryDraft}
+            onChange={(event) => setCategoryDraft(event.target.value)}
+            onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addCategory(); } }}
+            placeholder="e.g. Graphic Design"
+            className="h-10 min-w-56 rounded-lg border border-white/10 bg-[#101016] px-3 text-sm text-white outline-none focus:border-[#10B981]"
+          />
+          <button type="button" onClick={addCategory} className="rounded-lg border border-white/10 px-4 py-2 text-sm text-zinc-200 hover:border-[#10B981]">Add category</button>
+          <button type="button" onClick={() => void saveCategories()} disabled={savingCategories} className="rounded-lg bg-[#10B981] px-4 py-2 text-sm font-semibold text-[#07120E] disabled:opacity-60">
+            {savingCategories ? "Saving…" : "Save categories"}
+          </button>
+        </div>
+      </section>
       {showForm && (
         <form onSubmit={save} className={`${cardClass} mb-5 grid gap-4 sm:grid-cols-2`}>
           <h3 className="text-base font-semibold text-white sm:col-span-2">
@@ -369,7 +432,18 @@ export function AdminServicesPage() {
           {field("shortDescription", "Short description")}
           {field("description", "Description")}
           {field("icon", "Icon key")}
-          {field("category", "Category")}
+          <label className="block text-xs font-medium text-zinc-300">
+            Category
+            <select
+              required
+              value={draft.category}
+              onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value }))}
+              className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#101016] px-3 text-sm text-white outline-none focus:border-[#10B981]"
+            >
+              <option value="" disabled>Select a category</option>
+              {categories.map((category) => <option key={category} value={category}>{category}</option>)}
+            </select>
+          </label>
           {field("price", "Price")}
           {field("image", "Image URL")}
           <div className="flex justify-end gap-2 sm:col-span-2">

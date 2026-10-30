@@ -7,6 +7,7 @@ import {
   TrendingUp, Search, BarChart2, Sparkles, Layers, Building2, Moon, Sun
 } from "lucide-react";
 import { services } from "../../../data/services";
+import { adminApi } from "../../../lib/adminApi";
 import logoLight from "../../assets/logo.png";
 
 
@@ -41,7 +42,7 @@ const navLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
-const serviceCategories = [
+const defaultServiceCategories = [
   { label: "Website Development", services: services.filter(s => s.category === "Website Development") },
   { label: "Digital Marketing", services: services.filter(s => s.category === "Digital Marketing") },
   { label: "Design", services: services.filter(s => s.category === "Design") },
@@ -52,6 +53,8 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [serviceCategoryGroups, setServiceCategoryGroups] = useState(defaultServiceCategories);
+  const [serviceLoadError, setServiceLoadError] = useState("");
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return true;
     return localStorage.getItem("theme") !== "light";
@@ -60,6 +63,34 @@ export function Navbar() {
   const megaRef = useRef<HTMLDivElement>(null);
 
   const isHeroPage = location.pathname === "/";
+
+  useEffect(() => {
+    Promise.all([adminApi.getServices(), adminApi.getServiceCategories()])
+      .then(([loadedServices, loadedCategories]) => {
+        const mergedServices = [
+          ...services.filter((service) => !loadedServices.some((item) => item.slug === service.slug)),
+          ...loadedServices.map((service) => ({
+            ...services.find((item) => item.slug === service.slug),
+            ...service,
+            id: service._id,
+            features: service.features ?? [],
+            benefits: service.benefits ?? [],
+            process: service.process ?? [],
+            image: service.image || "",
+          })),
+        ];
+        const categoryLabels = [...new Set([
+          ...defaultServiceCategories.map((category) => category.label),
+          ...loadedCategories,
+        ])];
+        setServiceCategoryGroups(categoryLabels.map((label) => ({
+          label,
+          services: mergedServices.filter((service) => service.category === label),
+        })));
+        setServiceLoadError("");
+      })
+      .catch((error: Error) => setServiceLoadError(error.message));
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -200,7 +231,7 @@ export function Navbar() {
                           className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[720px] max-h-[60vh] overflow-y-auto bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-black/8 dark:border-white/8 p-6"
                         >
                           <div className="grid grid-cols-3 gap-6">
-                            {serviceCategories.map((cat) => (
+                            {serviceCategoryGroups.map((cat) => (
                               <div key={cat.label}>
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">{cat.label}</p>
                                 <div className="space-y-0.5">
@@ -223,6 +254,7 @@ export function Navbar() {
                               </div>
                             ))}
                           </div>
+                          {serviceLoadError && <p role="status" className="mt-4 text-xs text-slate-400">{serviceLoadError}</p>}
                           <div className="mt-5 pt-5 border-t border-slate-100 dark:border-white/8 flex items-center justify-between">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Not sure where to start? Let us guide you.</p>
                             <Link
