@@ -23,7 +23,9 @@ function ActionButton({ children, onClick, tone = "light" }: { children: React.R
 export function AdminLayout() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const [homeOpen, setHomeOpen] = useState(location.pathname === "/admin/banner");
+  const [homeOpen, setHomeOpen] = useState(
+    location.pathname === "/admin/banner" || location.pathname === "/admin/testimonials",
+  );
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const user = (() => {
@@ -56,7 +58,7 @@ export function AdminLayout() {
       });
     }
   };
-  const pageTitle = location.pathname.includes("/team") ? "Team Management" : location.pathname.includes("/projects") ? "Project Management" : location.pathname.includes("/users") ? "User Management" : location.pathname.includes("/services") ? "Website Services" : location.pathname.includes("/contacts") ? "Contact Inquiries" : location.pathname.includes("/profile") ? "Administrator Profile" : location.pathname.includes("/banner") ? "Home Banner" : "Dashboard";
+  const pageTitle = location.pathname.includes("/team") ? "Team Management" : location.pathname.includes("/projects") ? "Project Management" : location.pathname.includes("/users") ? "User Management" : location.pathname.includes("/services") ? "Website Services" : location.pathname.includes("/contacts") ? "Contact Inquiries" : location.pathname.includes("/profile") ? "Administrator Profile" : location.pathname.includes("/banner") ? "Home Banner" : location.pathname.includes("/testimonials") ? "Testimonials" : "Dashboard";
   const nav = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
     { to: "/admin/users", label: "Users", icon: Users },
@@ -91,7 +93,7 @@ export function AdminLayout() {
                 <div id="admin-home-menu" className="ml-6 mt-1 space-y-1 border-l border-white/10 pl-3">
                   {[
                     { label: "Banner", to: "/admin/banner", active: location.pathname === "/admin/banner" },
-                    { label: "Testimonials", to: "/#testimonials", active: location.pathname === "/" && location.hash === "#testimonials" },
+                    { label: "Testimonials", to: "/admin/testimonials", active: location.pathname === "/admin/testimonials" },
                     { label: "FAQ", to: "/#faq", active: location.pathname === "/" && location.hash === "#faq" },
                   ].map(({ label, to, active }) => (
                     <Link

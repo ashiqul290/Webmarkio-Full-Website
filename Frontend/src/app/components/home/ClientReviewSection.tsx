@@ -1,7 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { testimonials } from "../../../data/testimonials";
 import { Dialog, DialogContent } from "../ui/dialog";
+import { adminApi, type AdminTestimonial } from "../../../lib/adminApi";
+
+const defaultReviews: AdminTestimonial[] = testimonials.map((testimonial) => ({
+  id: testimonial.id,
+  name: testimonial.name,
+  role: testimonial.role,
+  company: testimonial.company,
+  image: testimonial.avatar,
+  video: testimonial.video || "",
+  text: testimonial.text,
+  serviceType: testimonial.role || "Digital services",
+  rating: testimonial.rating,
+}));
 
 function normalizeVideoUrl(url: string) {
   if (!url) return url;
@@ -33,10 +46,23 @@ function getVideoThumbnail(url: string) {
 export function ClientReviewSection() {
   const [mediaSrc, setMediaSrc] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"video" | "image" | "none" | null>(null);
+  const [reviews, setReviews] = useState(defaultReviews);
 
-  // Always show up to 6 cards (no navigation)
-  const perPage = 6;
-  const visible = testimonials.slice(0, perPage);
+  useEffect(() => {
+    let active = true;
+    adminApi
+      .getTestimonials()
+      .then((content) => {
+        if (active && content.initialized) setReviews(content.testimonials);
+      })
+      .catch((error) => {
+        console.error("Unable to load client reviews.", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section className="pb-24 text-white overflow-hidden">
@@ -47,14 +73,17 @@ export function ClientReviewSection() {
           <p className="mt-3 text-slate-300">Real people. Real stories. Real results with WebMarkio.</p>
         </div>
 
+        {reviews.length === 0 ? (
+          <p className="py-12 text-center text-slate-400">Client reviews will appear here soon.</p>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {visible.map((t) => (
+          {reviews.map((t) => (
             <div key={t.id} className="p-6 bg-[#071025]/50 border border-white/5 rounded-2xl">
               <div className="relative rounded-xl overflow-hidden mb-4 bg-slate-900">
                 {t.video && isVideoUrl(t.video) ? (
                   <img
                     src={getVideoThumbnail(t.video)}
-                    alt={t.name}
+                    alt={t.name || "Client video"}
                     className="w-full h-44 object-cover opacity-60"
                   />
                 ) : (
@@ -85,21 +114,30 @@ export function ClientReviewSection() {
               </div>
 
               <div className="flex items-center gap-3 mb-3">
-                <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full object-cover border border-white/10" />
+                {t.image ? (
+                  <img src={t.image} alt={t.name || "Client"} className="w-12 h-12 rounded-full object-cover border border-white/10" />
+                ) : (
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-violet-500/15 font-semibold text-violet-300">
+                    {(t.name || t.company || "C").charAt(0).toUpperCase()}
+                  </span>
+                )}
                 <div>
-                  <div className="font-semibold">{t.name}</div>
-                  <div className="text-sm text-slate-400">{t.role} — {t.company}</div>
+                <div className="font-semibold">{t.name || "Anonymous client"}</div>
+                <div className="text-sm text-slate-400">
+                  {[t.role, t.company].filter(Boolean).join(" — ") || t.serviceType}
+                </div>
                 </div>
               </div>
 
               <p className="text-slate-300 mb-4 line-clamp-4">{t.text}</p>
 
               <div className="mt-4">
-                <span className="inline-block px-3 py-1 text-sm bg-violet-900/40 text-violet-300 rounded-full">Website Design</span>
+                <span className="inline-block px-3 py-1 text-sm bg-violet-900/40 text-violet-300 rounded-full">{t.serviceType}</span>
               </div>
             </div>
           ))}
         </div>
+        )}
 
         {/* No navigation controls — showing fixed set of cards */}
       </div>

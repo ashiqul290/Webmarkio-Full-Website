@@ -1,14 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { testimonials } from "../../../data/testimonials";
 import { SectionHeading } from "../shared/SectionHeading";
+import { adminApi, type AdminTestimonial } from "../../../lib/adminApi";
+
+const defaultReviews: AdminTestimonial[] = testimonials.map((testimonial) => ({
+  id: testimonial.id,
+  name: testimonial.name,
+  role: testimonial.role,
+  company: testimonial.company,
+  image: testimonial.avatar,
+  video: testimonial.video || "",
+  text: testimonial.text,
+  serviceType: testimonial.role || "Digital services",
+  rating: testimonial.rating,
+}));
 
 export function TestimonialsSection() {
   const [current, setCurrent] = useState(0);
+  const [reviews, setReviews] = useState(defaultReviews);
 
-  const prev = () => setCurrent(c => (c === 0 ? testimonials.length - 1 : c - 1));
-  const next = () => setCurrent(c => (c === testimonials.length - 1 ? 0 : c + 1));
+  useEffect(() => {
+    let active = true;
+    adminApi
+      .getTestimonials()
+      .then((content) => {
+        if (active && content.initialized) {
+          setReviews(content.testimonials);
+          setCurrent(0);
+        }
+      })
+      .catch((error) => {
+        console.error("Unable to load homepage testimonials.", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const prev = () => setCurrent((index) => (index === 0 ? reviews.length - 1 : index - 1));
+  const next = () => setCurrent((index) => (index === reviews.length - 1 ? 0 : index + 1));
 
   return (
     <section id="testimonials" className="py-24 bg-slate-50 dark:bg-[#0A0F1E] overflow-hidden">
@@ -19,6 +52,11 @@ export function TestimonialsSection() {
           subtitle="Don't take our word for it. Here's what the people we've worked with have to say about working with WebMarkio."
         />
 
+        {reviews.length === 0 ? (
+          <p className="mx-auto max-w-3xl text-center text-slate-500 dark:text-slate-400">
+            Client reviews will appear here soon.
+          </p>
+        ) : <>
         {/* Featured Testimonial */}
         <div className="max-w-4xl mx-auto mb-12">
           <div className="relative p-8 md:p-12 bg-white dark:bg-[#0F172A] border border-slate-100 dark:border-white/5 rounded-3xl shadow-xl">
@@ -32,31 +70,49 @@ export function TestimonialsSection() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="flex gap-1 mb-6">
-                  {[1, 2, 3, 4, 5].map(i => (
+                  {Array.from({ length: reviews[current].rating }, (_, i) => (
                     <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
                 <p className="text-xl md:text-2xl text-[#1E293B] dark:text-white leading-relaxed mb-8 [font-family:'Plus_Jakarta_Sans',sans-serif]">
-                  "{testimonials[current].text}"
+                  "{reviews[current].text}"
                 </p>
                 <div className="flex items-center gap-4">
-                  <img
-                    src={testimonials[current].avatar}
-                    alt={testimonials[current].name}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-[#2563EB]/20"
-                  />
+                  {reviews[current].image ? (
+                    <img
+                      src={reviews[current].image}
+                      alt={reviews[current].name || "Client"}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-[#2563EB]/20"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2563EB]/10 font-semibold text-[#2563EB]">
+                      {(reviews[current].name || reviews[current].company || "C").charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div>
-                    <div className="font-semibold text-[#1E293B] dark:text-white">{testimonials[current].name}</div>
-                    <div className="text-sm text-slate-500 dark:text-slate-400">{testimonials[current].role} at {testimonials[current].company}</div>
+                    <div className="font-semibold text-[#1E293B] dark:text-white">{reviews[current].name || "Anonymous client"}</div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                      {[reviews[current].role, reviews[current].company, reviews[current].serviceType].filter(Boolean).join(" · ")}
+                    </div>
                   </div>
                 </div>
+                {reviews[current].video && (
+                  <a
+                    href={reviews[current].video}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-5 inline-flex text-sm font-semibold text-[#2563EB] hover:underline"
+                  >
+                    Watch client video
+                  </a>
+                )}
               </motion.div>
             </AnimatePresence>
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-8">
               <div className="flex gap-2">
-                {testimonials.map((_, i) => (
+                {reviews.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setCurrent(i)}
@@ -80,11 +136,11 @@ export function TestimonialsSection() {
         {/* Centered previous/current/next testimonial cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            (current - 1 + testimonials.length) % testimonials.length,
+            (current - 1 + reviews.length) % reviews.length,
             current,
-            (current + 1) % testimonials.length,
+            (current + 1) % reviews.length,
           ].map((index, i) => {
-            const t = testimonials[index];
+            const t = reviews[index];
             const isActive = index === current;
 
             return (
@@ -103,7 +159,7 @@ export function TestimonialsSection() {
                 }`}
               >
                 <div className="flex gap-0.5 mb-3">
-                  {[1, 2, 3, 4, 5].map(s => (
+                  {Array.from({ length: t.rating }, (_, s) => (
                     <Star key={s} className={`w-3.5 h-3.5 fill-yellow-400 text-yellow-400 ${isActive ? "" : "opacity-80"}`} />
                   ))}
                 </div>
@@ -111,18 +167,25 @@ export function TestimonialsSection() {
                   "{t.text}"
                 </p>
                 <div className="flex items-center gap-3">
-                  <img src={t.avatar} alt={t.name} className={`rounded-full object-cover ${isActive ? "w-10 h-10" : "w-9 h-9"}`} />
+                  {t.image ? (
+                    <img src={t.image} alt={t.name || "Client"} className={`rounded-full object-cover ${isActive ? "w-10 h-10" : "w-9 h-9"}`} />
+                  ) : (
+                    <span className={`flex shrink-0 items-center justify-center rounded-full bg-[#2563EB]/15 font-semibold text-[#2563EB] ${isActive ? "w-10 h-10" : "w-9 h-9"}`}>
+                      {(t.name || t.company || "C").charAt(0).toUpperCase()}
+                    </span>
+                  )}
                   <div>
                     <div className={`text-sm font-semibold ${isActive ? "text-white" : "text-[#1E293B] dark:text-white"}`}>
-                      {t.name}
+                      {t.name || "Anonymous client"}
                     </div>
-                    <div className="text-xs text-slate-400">{t.company}</div>
+                    <div className="text-xs text-slate-400">{t.company || t.serviceType}</div>
                   </div>
                 </div>
               </motion.button>
             );
           })}
         </div>
+        </>}
       </div>
     </section>
   );

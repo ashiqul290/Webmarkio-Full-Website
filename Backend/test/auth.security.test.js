@@ -13,6 +13,7 @@ const ProjectModel = require("../model/projects.model");
 const ServiceModel = require("../model/service.model");
 const ContactModel = require("../model/contact.model");
 const BannerModel = require("../model/banner.model");
+const TestimonialsContentModel = require("../model/testimonials.model");
 const generateToken = require("../helpers/generateToken");
 
 const ids = {
@@ -98,6 +99,75 @@ test("auth and admin endpoints enforce server-verified roles", async (t) => {
           storedBanner = update.$set;
           return storedBanner;
         },
+      });
+
+      test("homepage testimonials are public to read and only administrators can manage reviews", async () => {
+        const restoreAuthentication = installAuthenticationMocks();
+        const originalFindById = TestimonialsContentModel.findById;
+        const originalFindByIdAndUpdate = TestimonialsContentModel.findByIdAndUpdate;
+        let storedContent = null;
+        TestimonialsContentModel.findById = () => ({ lean: async () => storedContent });
+        TestimonialsContentModel.findByIdAndUpdate = (_id, update) => ({
+          lean: async () => {
+            storedContent = { ...update.$set };
+            return storedContent;
+          },
+        });
+
+        const review = {
+          id: "review-one",
+          name: "Alex Client",
+          role: "Founder",
+          company: "Example Co",
+          image: "https://example.com/client.jpg",
+          video: "",
+          text: "The website project was excellent.",
+          serviceType: "Website Design",
+          rating: 5,
+        };
+
+        try {
+          const publicContent = await request("/home/testimonials");
+          assert.equal(publicContent.status, 200);
+          assert.equal(publicContent.body.data.initialized, false);
+
+          const unauthenticatedUpdate = await request("/admin/testimonials", {
+            method: "PUT",
+            body: { testimonials: [review] },
+          });
+          assert.equal(unauthenticatedUpdate.status, 401);
+
+          const userUpdate = await request("/admin/testimonials", {
+            token: bearer(ids.user),
+            method: "PUT",
+            body: { testimonials: [review] },
+          });
+          assert.equal(userUpdate.status, 403);
+
+          const saved = await request("/admin/testimonials", {
+            token: bearer(ids.admin),
+            method: "PUT",
+            body: { testimonials: [review] },
+          });
+          assert.equal(saved.status, 200);
+          assert.equal(saved.body.data.testimonials[0].serviceType, "Website Design");
+
+          const publicAfterSave = await request("/home/testimonials");
+          assert.equal(publicAfterSave.body.data.initialized, true);
+          assert.deepEqual(publicAfterSave.body.data.testimonials, [review]);
+
+          const invalid = await request("/admin/testimonials", {
+            token: bearer(ids.admin),
+            method: "PUT",
+            body: { testimonials: [{ ...review, video: "javascript:alert(1)" }] },
+          });
+          assert.equal(invalid.status, 400);
+          assert.deepEqual(storedContent.testimonials, [review]);
+        } finally {
+          TestimonialsContentModel.findById = originalFindById;
+          TestimonialsContentModel.findByIdAndUpdate = originalFindByIdAndUpdate;
+          restoreAuthentication();
+        }
       });
 
       const content = {

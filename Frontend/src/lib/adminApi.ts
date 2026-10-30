@@ -10,6 +10,23 @@ export type BannerContent = {
   stats: { value: string; label: string }[];
 };
 
+export type AdminTestimonial = {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  image: string;
+  video: string;
+  text: string;
+  serviceType: string;
+  rating: number;
+};
+
+export type TestimonialsContent = {
+  initialized: boolean;
+  testimonials: AdminTestimonial[];
+};
+
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) {
     super(message);
@@ -105,6 +122,12 @@ export const adminApi = {
   getBannerContent: () => request<BannerContent>("/home/banner"),
   updateBannerContent: (content: BannerContent) =>
     request<BannerContent>("/admin/banner", { method: "PUT", body: JSON.stringify(content) }),
+  getTestimonials: () => request<TestimonialsContent>("/home/testimonials"),
+  updateTestimonials: (testimonials: AdminTestimonial[]) =>
+    request<TestimonialsContent>("/admin/testimonials", {
+      method: "PUT",
+      body: JSON.stringify({ testimonials }),
+    }),
   getCurrentUser: () => request<Omit<AdminUser, "createdAt">>("/auth/me"),
   logout: () => request<null>("/auth/logout", { method: "POST" }),
   getOverview: () => request<AdminOverview>("/admin/overview"),
