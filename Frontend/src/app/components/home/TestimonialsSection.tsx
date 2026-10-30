@@ -11,7 +11,7 @@ export function TestimonialsSection() {
   const next = () => setCurrent(c => (c === testimonials.length - 1 ? 0 : c + 1));
 
   return (
-    <section className="py-24 bg-slate-50 dark:bg-[#0A0F1E] overflow-hidden">
+    <section id="testimonials" className="py-24 bg-slate-50 dark:bg-[#0A0F1E] overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading
           badge="Testimonials"

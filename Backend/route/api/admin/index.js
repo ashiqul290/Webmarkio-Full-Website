@@ -6,6 +6,7 @@ const {
   updateUserRole,
   getContacts,
 } = require("../../../controller/admin.controller");
+const { getBannerContent, updateBannerContent } = require("../../../controller/banner.controller");
 const { protect, adminOnly } = require("../../../middleware/auth.middleware");
 
 const admin = express.Router();
@@ -15,5 +16,7 @@ admin.get("/users", getUsers);
 admin.patch("/users/:id/status", updateUserStatus);
 admin.patch("/users/:id/role", updateUserRole);
 admin.get("/contacts", getContacts);
+admin.get("/banner", getBannerContent);
+admin.put("/banner", updateBannerContent);
 
 module.exports = admin;

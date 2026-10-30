@@ -9,7 +9,7 @@ export function FAQSection() {
   const preview = faqItems.slice(0, 6);
 
   return (
-    <section className="py-24 bg-slate-50 dark:bg-[#0A0F1E]">
+    <section id="faq" className="py-24 bg-slate-50 dark:bg-[#0A0F1E]">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading
           badge="FAQ"

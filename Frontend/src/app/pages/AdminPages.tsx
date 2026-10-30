@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { BarChart3, BriefcaseBusiness, ChevronDown, FolderKanban, LayoutDashboard, LogOut, Menu, MessageSquareText, Pencil, Plus, Trash2, UserRound, Users, X } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, ChevronDown, FolderKanban, Home, LayoutDashboard, LogOut, Menu, MessageSquareText, Pencil, Plus, Trash2, UserRound, Users, X } from "lucide-react";
 import logo from "../assets/logo.png";
 import { adminApi, type Project, type TeamMember } from "../../lib/adminApi";
 
@@ -21,9 +21,10 @@ function ActionButton({ children, onClick, tone = "light" }: { children: React.R
 }
 
 export function AdminLayout() {
-  const [open, setOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const [homeOpen, setHomeOpen] = useState(location.pathname === "/admin/banner");
+  const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
   const user = (() => {
     try {
@@ -55,7 +56,7 @@ export function AdminLayout() {
       });
     }
   };
-  const pageTitle = location.pathname.includes("/team") ? "Team Management" : location.pathname.includes("/projects") ? "Project Management" : location.pathname.includes("/users") ? "User Management" : location.pathname.includes("/services") ? "Website Services" : location.pathname.includes("/contacts") ? "Contact Inquiries" : location.pathname.includes("/profile") ? "Administrator Profile" : "Dashboard";
+  const pageTitle = location.pathname.includes("/team") ? "Team Management" : location.pathname.includes("/projects") ? "Project Management" : location.pathname.includes("/users") ? "User Management" : location.pathname.includes("/services") ? "Website Services" : location.pathname.includes("/contacts") ? "Contact Inquiries" : location.pathname.includes("/profile") ? "Administrator Profile" : location.pathname.includes("/banner") ? "Home Banner" : "Dashboard";
   const nav = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
     { to: "/admin/users", label: "Users", icon: Users },
@@ -67,7 +68,48 @@ export function AdminLayout() {
   ];
   const sidebar = <aside className="flex h-full w-64 flex-col border-r border-white/10 bg-[#17171F]">
     <Link to="#" className="flex h-20 items-center border-b border-white/10 px-5"><img src={logo} alt="Webmarkio" className="h-20 w-44 object-contain" /></Link>
-    <nav className="space-y-1 px-3 py-5">{nav.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition ${isActive ? "bg-emerald-500/15 text-emerald-400" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}><Icon className="h-5 w-5" />{label}</NavLink>)}</nav>
+    <nav className="space-y-1 px-3 py-5">
+      {nav.map(({ to, label, icon: Icon, end }) => (
+        <div key={to}>
+          <NavLink to={to} end={end} onClick={() => setOpen(false)} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition ${isActive ? "bg-emerald-500/15 text-emerald-400" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}>
+            <Icon className="h-5 w-5" />{label}
+          </NavLink>
+          {to === "/admin" && (
+            <div>
+              <button
+                type="button"
+                aria-expanded={homeOpen}
+                aria-controls="admin-home-menu"
+                onClick={() => setHomeOpen((value) => !value)}
+                className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-slate-400 transition hover:bg-white/5 hover:text-white"
+              >
+                <Home className="h-5 w-5" />
+                <span className="flex-1 text-left">Home</span>
+                <ChevronDown className={`h-4 w-4 transition ${homeOpen ? "rotate-180" : ""}`} />
+              </button>
+              {homeOpen && (
+                <div id="admin-home-menu" className="ml-6 mt-1 space-y-1 border-l border-white/10 pl-3">
+                  {[
+                    { label: "Banner", to: "/admin/banner", active: location.pathname === "/admin/banner" },
+                    { label: "Testimonials", to: "/#testimonials", active: location.pathname === "/" && location.hash === "#testimonials" },
+                    { label: "FAQ", to: "/#faq", active: location.pathname === "/" && location.hash === "#faq" },
+                  ].map(({ label, to, active }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setOpen(false)}
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${active ? "bg-emerald-500/15 text-emerald-400" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </nav>
     <div className="mt-auto border-t border-white/10 p-4"><p className="text-xs font-medium text-slate-500">WEBMARKIO ADMIN</p><p className="mt-1 text-sm font-semibold text-slate-300">Management panel</p></div>
   </aside>;
   return <div className="min-h-screen bg-[#0B0B0F] text-slate-100">

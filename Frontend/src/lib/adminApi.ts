@@ -2,6 +2,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5100/rout
 
 type ApiResponse<T> = { success: boolean; message: string; data: T };
 
+export type BannerContent = {
+  headlineBefore: string;
+  headlineHighlight: string;
+  headlineAfter: string;
+  description: string;
+  stats: { value: string; label: string }[];
+};
+
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) {
     super(message);
@@ -94,6 +102,9 @@ async function request<T>(path: string, options: RequestInit = {}) {
 }
 
 export const adminApi = {
+  getBannerContent: () => request<BannerContent>("/home/banner"),
+  updateBannerContent: (content: BannerContent) =>
+    request<BannerContent>("/admin/banner", { method: "PUT", body: JSON.stringify(content) }),
   getCurrentUser: () => request<Omit<AdminUser, "createdAt">>("/auth/me"),
   logout: () => request<null>("/auth/logout", { method: "POST" }),
   getOverview: () => request<AdminOverview>("/admin/overview"),

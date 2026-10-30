@@ -12,6 +12,7 @@ const UserModel = require("../model/User.model");
 const ProjectModel = require("../model/projects.model");
 const ServiceModel = require("../model/service.model");
 const ContactModel = require("../model/contact.model");
+const BannerModel = require("../model/banner.model");
 const generateToken = require("../helpers/generateToken");
 
 const ids = {
@@ -84,6 +85,74 @@ test("auth and admin endpoints enforce server-verified roles", async (t) => {
       const contacts = await request("/contact/all-contact");
       assert.equal(overview.status, 401);
       assert.equal(contacts.status, 401);
+    });
+
+    test("homepage banner content is public to read and restricted to admin updates", async () => {
+      const restoreAuthentication = installAuthenticationMocks();
+      const originalFindById = BannerModel.findById;
+      const originalFindByIdAndUpdate = BannerModel.findByIdAndUpdate;
+      let storedBanner = null;
+      BannerModel.findById = () => ({ lean: async () => storedBanner });
+      BannerModel.findByIdAndUpdate = (_id, update) => ({
+        lean: async () => {
+          storedBanner = update.$set;
+          return storedBanner;
+        },
+      });
+
+      const content = {
+        headlineBefore: "Design",
+        headlineHighlight: "Better",
+        headlineAfter: "Websites",
+        description: "We build high-performing websites.",
+        stats: [
+          { value: "120+", label: "Projects" },
+          { value: "60+", label: "Clients" },
+          { value: "5★", label: "Rating" },
+        ],
+      };
+
+      try {
+        const publicContent = await request("/home/banner");
+        assert.equal(publicContent.status, 200);
+        assert.equal(publicContent.body.data.headlineBefore, "We Build");
+
+        const unauthorizedUpdate = await request("/admin/banner", {
+          method: "PUT",
+          body: content,
+        });
+        assert.equal(unauthorizedUpdate.status, 401);
+
+        const userUpdate = await request("/admin/banner", {
+          token: bearer(ids.user),
+          method: "PUT",
+          body: content,
+        });
+        assert.equal(userUpdate.status, 403);
+
+        const saved = await request("/admin/banner", {
+          token: bearer(ids.admin),
+          method: "PUT",
+          body: content,
+        });
+        assert.equal(saved.status, 200);
+        assert.deepEqual(saved.body.data, content);
+
+        const invalid = await request("/admin/banner", {
+          token: bearer(ids.admin),
+          method: "PUT",
+          body: { ...content, stats: content.stats.slice(0, 2) },
+        });
+        assert.equal(invalid.status, 400);
+        assert.deepEqual(storedBanner, content);
+
+        const updatedPublicContent = await request("/home/banner");
+        assert.equal(updatedPublicContent.body.data.headlineHighlight, "Better");
+      } finally {
+        BannerModel.findById = originalFindById;
+        BannerModel.findByIdAndUpdate = originalFindByIdAndUpdate;
+        restoreAuthentication();
+      }
     });
 
     await t.test("authenticated users without admin role are forbidden", async () => {
