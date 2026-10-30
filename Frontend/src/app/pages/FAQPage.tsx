@@ -1,15 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Minus } from "lucide-react";
-import { faqItems, faqCategories } from "../../data/faq";
+import { faqItems as defaultFaqItems } from "../../data/faq";
 import { SectionHeading } from "../components/shared/SectionHeading";
 import { PageTransition } from "../components/shared/PageTransition";
 import { CTASection } from "../components/home/CTASection";
+import { adminApi } from "../../lib/adminApi";
 
 export function FAQPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
-  const filtered = activeCategory === "All" ? faqItems : faqItems.filter(f => f.category === activeCategory);
+  const [faqItems, setFaqItems] = useState(defaultFaqItems);
+
+  useEffect(() => {
+    let active = true;
+    adminApi
+      .getFaq()
+      .then((content) => {
+        if (active && content.initialized) setFaqItems(content.faqItems);
+      })
+      .catch((error) => {
+        console.error("Unable to load FAQ page content.", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const faqCategories = ["All", ...new Set(faqItems.map((item) => item.category).filter(Boolean))];
+  const filtered = activeCategory === "All" ? faqItems : faqItems.filter((f) => f.category === activeCategory);
 
   return (
     <PageTransition>

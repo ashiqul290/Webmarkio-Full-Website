@@ -88,7 +88,7 @@ test("auth and admin endpoints enforce server-verified roles", async (t) => {
       assert.equal(contacts.status, 401);
     });
 
-    test("homepage banner content is public to read and restricted to admin updates", async () => {
+    await t.test("homepage banner content is public to read and restricted to admin updates", async (t) => {
       const restoreAuthentication = installAuthenticationMocks();
       const originalFindById = BannerModel.findById;
       const originalFindByIdAndUpdate = BannerModel.findByIdAndUpdate;
@@ -101,7 +101,7 @@ test("auth and admin endpoints enforce server-verified roles", async (t) => {
         },
       });
 
-      test("homepage testimonials are public to read and only administrators can manage reviews", async () => {
+      await t.test("homepage testimonials are public to read and only administrators can manage reviews", async () => {
         const restoreAuthentication = installAuthenticationMocks();
         const originalFindById = TestimonialsContentModel.findById;
         const originalFindByIdAndUpdate = TestimonialsContentModel.findByIdAndUpdate;
@@ -166,6 +166,82 @@ test("auth and admin endpoints enforce server-verified roles", async (t) => {
         } finally {
           TestimonialsContentModel.findById = originalFindById;
           TestimonialsContentModel.findByIdAndUpdate = originalFindByIdAndUpdate;
+          restoreAuthentication();
+        }
+      });
+
+      await t.test("administrator can edit a single saved testimonial without replacing other reviews", async () => {
+        const restoreAuthentication = installAuthenticationMocks();
+        const originalFindById = TestimonialsContentModel.findById;
+        const savedReview = {
+          id: "review-to-edit",
+          name: "Original name",
+          role: "",
+          company: "Example Co",
+          image: "",
+          video: "",
+          text: "Original review",
+          serviceType: "Website Design",
+          rating: 5,
+        };
+        const untouchedReview = {
+          id: "review-untouched",
+          name: "Keep this review",
+          role: "",
+          company: "Another Co",
+          image: "",
+          video: "",
+          text: "Do not change this review",
+          serviceType: "SEO",
+          rating: 4,
+        };
+        const storedContent = {
+          initialized: true,
+          testimonials: [savedReview, untouchedReview],
+        };
+
+        TestimonialsContentModel.findById = () => {
+          const document = {
+            initialized: storedContent.initialized,
+            testimonials: storedContent.testimonials.map((review) => ({
+              ...review,
+              toObject() {
+                return { ...this, toObject: undefined };
+              },
+            })),
+            async save() {
+              storedContent.testimonials = this.testimonials.map((review) => {
+                const { toObject, ...plainReview } = review;
+                return plainReview;
+              });
+            },
+          };
+
+          return {
+            lean: async () => storedContent,
+            then: (resolve, reject) => Promise.resolve(document).then(resolve, reject),
+          };
+        };
+
+        try {
+          const updated = await request("/admin/testimonials/review-to-edit", {
+            token: bearer(ids.admin),
+            method: "PATCH",
+            body: {
+              ...savedReview,
+              name: "Updated client",
+              text: "Updated review message",
+              serviceType: "Digital Marketing",
+            },
+          });
+
+          assert.equal(updated.status, 200);
+          assert.equal(updated.body.data.testimonials[0].name, "Updated client");
+          assert.equal(updated.body.data.testimonials[0].text, "Updated review message");
+          assert.deepEqual(updated.body.data.testimonials[1], untouchedReview);
+          assert.equal(storedContent.testimonials[0].serviceType, "Digital Marketing");
+        } finally {
+          TestimonialsContentModel.findById = originalFindById;
           restoreAuthentication();
         }
       });

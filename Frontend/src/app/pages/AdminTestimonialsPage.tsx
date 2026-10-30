@@ -87,11 +87,13 @@ export function AdminTestimonialsPage() {
     setError("");
     setNotice("");
     setSaving(true);
-    const updatedReviews = editingId
-      ? reviews.map((review) => (review.id === editingId ? { ...draft, id: editingId } : review))
-      : [...reviews, { ...draft, id: crypto.randomUUID() }];
     try {
-      const saved = await adminApi.updateTestimonials(updatedReviews);
+      const saved = editingId
+        ? await adminApi.updateTestimonial({ ...draft, id: editingId })
+        : await adminApi.updateTestimonials([
+            ...reviews,
+            { ...draft, id: crypto.randomUUID() },
+          ]);
       setReviews(saved.testimonials);
       setNotice(editingId ? "Review updated successfully." : "Review added successfully.");
       closeForm();

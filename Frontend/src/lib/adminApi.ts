@@ -27,6 +27,18 @@ export type TestimonialsContent = {
   testimonials: AdminTestimonial[];
 };
 
+export type AdminFaqItem = {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+};
+
+export type FaqContent = {
+  initialized: boolean;
+  faqItems: AdminFaqItem[];
+};
+
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) {
     super(message);
@@ -127,6 +139,22 @@ export const adminApi = {
     request<TestimonialsContent>("/admin/testimonials", {
       method: "PUT",
       body: JSON.stringify({ testimonials }),
+    }),
+  updateTestimonial: (testimonial: AdminTestimonial) =>
+    request<TestimonialsContent>(`/admin/testimonials/${encodeURIComponent(testimonial.id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(testimonial),
+    }),
+  getFaq: () => request<FaqContent>("/home/faq"),
+  updateFaq: (faqItems: AdminFaqItem[]) =>
+    request<FaqContent>("/admin/faq", {
+      method: "PUT",
+      body: JSON.stringify({ faqItems }),
+    }),
+  updateFaqItem: (faqItem: AdminFaqItem) =>
+    request<FaqContent>(`/admin/faq/${encodeURIComponent(faqItem.id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(faqItem),
     }),
   getCurrentUser: () => request<Omit<AdminUser, "createdAt">>("/auth/me"),
   logout: () => request<null>("/auth/logout", { method: "POST" }),

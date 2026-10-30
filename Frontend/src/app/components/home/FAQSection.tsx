@@ -1,12 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Minus } from "lucide-react";
 import { faqItems } from "../../../data/faq";
 import { SectionHeading } from "../shared/SectionHeading";
+import { adminApi } from "../../../lib/adminApi";
 
 export function FAQSection() {
   const [open, setOpen] = useState<string | null>("1");
-  const preview = faqItems.slice(0, 6);
+  const [items, setItems] = useState(faqItems);
+
+  useEffect(() => {
+    let active = true;
+    adminApi
+      .getFaq()
+      .then((content) => {
+        if (active && content.initialized) {
+          setItems(content.faqItems);
+          setOpen(content.faqItems[0]?.id ?? null);
+        }
+      })
+      .catch((error) => {
+        console.error("Unable to load homepage FAQs.", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section id="faq" className="py-24 bg-slate-50 dark:bg-[#0A0F1E]">
@@ -18,7 +38,7 @@ export function FAQSection() {
         />
 
         <div className="space-y-3">
-          {preview.map((item) => (
+          {items.map((item) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0 }}

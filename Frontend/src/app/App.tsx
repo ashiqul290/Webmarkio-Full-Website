@@ -32,6 +32,7 @@ import { AdminLayout, AdminProjectsPage, AdminTeamPage } from "./pages/AdminPage
 import { AdminAccess } from "./pages/AdminAccess";
 import { AdminBannerPage } from "./pages/AdminBannerPage";
 import { AdminTestimonialsPage } from "./pages/AdminTestimonialsPage";
+import { AdminFAQPage } from "./pages/AdminFAQPage";
 import {
   AdminContactsPage,
   AdminHomePage,
@@ -114,6 +115,7 @@ function AppLayout() {
           <Route path="profile" element={<AdminProfilePage />} />
           <Route path="banner" element={<AdminBannerPage />} />
           <Route path="testimonials" element={<AdminTestimonialsPage />} />
+          <Route path="faq" element={<AdminFAQPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="services" element={<AdminServicesPage />} />
           <Route path="contacts" element={<AdminContactsPage />} />
