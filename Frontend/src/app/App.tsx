@@ -28,6 +28,7 @@ import { ClientReviewPage } from "./pages/ClientReviewPage";
 import TermsPageNew from "./pages/TermsPageUpdate";
 import ClientMeetingsPage from "./pages/ClientMeetingsPage";
 import { LoginPage, SignupPage } from "./pages/AuthPages";
+<<<<<<< HEAD
 import { AdminLayout, AdminProjectsPage, AdminTeamPage } from "./pages/AdminPages";
 import { AdminAccess } from "./pages/AdminAccess";
 import { AdminBannerPage } from "./pages/AdminBannerPage";
@@ -40,6 +41,9 @@ import {
   AdminServicesPage,
   AdminUsersPage,
 } from "./pages/AdminManagementPages";
+=======
+import { AdminDashboard, AdminLayout, AdminProjectsPage, AdminTeamPage } from "./pages/AdminPages";
+>>>>>>> origin/main
 import AdminMain from "./Admin/AdminMain";
 
 function ScrollToTop() {
@@ -80,11 +84,17 @@ function SiteLayout() {
 }
 
 function AppLayout() {
+<<<<<<< HEAD
   const location = useLocation();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       {location.pathname !== "/login" && location.pathname !== "/signup" && <CustomCursor />}
+=======
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <CustomCursor />
+>>>>>>> origin/main
       <ScrollToTop />
       <Routes>
         <Route element={<SiteLayout />}>
@@ -110,6 +120,7 @@ function AppLayout() {
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+<<<<<<< HEAD
         <Route path="/admin" element={<AdminAccess><AdminLayout /></AdminAccess>}>
           <Route index element={<AdminHomePage />} />
           <Route path="profile" element={<AdminProfilePage />} />
@@ -122,6 +133,12 @@ function AppLayout() {
           <Route path="projects" element={<AdminProjectsPage />} />
           <Route path="team" element={<AdminTeamPage />} />
           <Route path="*" element={<NotFoundPage />} />
+=======
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="projects" element={<AdminProjectsPage />} />
+          <Route path="team" element={<AdminTeamPage />} />
+>>>>>>> origin/main
         </Route>
         <Route path="*" element={<NotFoundPage />} />
         {/* <Route path="/admin" element={<AdminMain />} /> */}

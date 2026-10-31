@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
+=======
+import { useState } from "react";
+>>>>>>> origin/main
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Minus } from "lucide-react";
 import { faqItems } from "../../../data/faq";
 import { SectionHeading } from "../shared/SectionHeading";
+<<<<<<< HEAD
 import { adminApi } from "../../../lib/adminApi";
 
 export function FAQSection() {
@@ -30,6 +35,15 @@ export function FAQSection() {
 
   return (
     <section id="faq" className="py-24 bg-slate-50 dark:bg-[#0A0F1E]">
+=======
+
+export function FAQSection() {
+  const [open, setOpen] = useState<string | null>("1");
+  const preview = faqItems.slice(0, 6);
+
+  return (
+    <section className="py-24 bg-slate-50 dark:bg-[#0A0F1E]">
+>>>>>>> origin/main
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading
           badge="FAQ"
@@ -38,7 +52,11 @@ export function FAQSection() {
         />
 
         <div className="space-y-3">
+<<<<<<< HEAD
           {items.map((item) => (
+=======
+          {preview.map((item) => (
+>>>>>>> origin/main
             <motion.div
               key={item.id}
               initial={{ opacity: 0 }}

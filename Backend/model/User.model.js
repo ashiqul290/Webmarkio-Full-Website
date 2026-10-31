@@ -9,15 +9,23 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
+<<<<<<< HEAD
       trim: true,
       lowercase: true,
       required: [true, "email is required"],
       unique: true,
+=======
+      required: [true, "email is required"],
+      unique: [true, "email already in use"],
+>>>>>>> origin/main
     },
     password: {
       type: String,
       required: [true, "password is required"],
+<<<<<<< HEAD
       select: false,
+=======
+>>>>>>> origin/main
     },
     phone: {
       type: String,
@@ -27,6 +35,7 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+<<<<<<< HEAD
     status: {
       type: String,
       enum: ["active", "suspended"],
@@ -37,12 +46,15 @@ const userSchema = new mongoose.Schema(
       default: 0,
       select: false,
     },
+=======
+>>>>>>> origin/main
   },
   {
     timestamps: true,
   },
 );
 
+<<<<<<< HEAD
 userSchema.set("toJSON", {
   transform(_document, returned) {
     delete returned.password;
@@ -52,4 +64,6 @@ userSchema.set("toJSON", {
   },
 });
 
+=======
+>>>>>>> origin/main
 module.exports = mongoose.model("user", userSchema);

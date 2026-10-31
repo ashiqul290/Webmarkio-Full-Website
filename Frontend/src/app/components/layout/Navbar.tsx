@@ -7,7 +7,10 @@ import {
   TrendingUp, Search, BarChart2, Sparkles, Layers, Building2, Moon, Sun
 } from "lucide-react";
 import { services } from "../../../data/services";
+<<<<<<< HEAD
 import { adminApi } from "../../../lib/adminApi";
+=======
+>>>>>>> origin/main
 import logoLight from "../../assets/logo.png";
 
 
@@ -42,7 +45,11 @@ const navLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
+<<<<<<< HEAD
 const defaultServiceCategories = [
+=======
+const serviceCategories = [
+>>>>>>> origin/main
   { label: "Website Development", services: services.filter(s => s.category === "Website Development") },
   { label: "Digital Marketing", services: services.filter(s => s.category === "Digital Marketing") },
   { label: "Design", services: services.filter(s => s.category === "Design") },
@@ -53,8 +60,11 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+<<<<<<< HEAD
   const [serviceCategoryGroups, setServiceCategoryGroups] = useState(defaultServiceCategories);
   const [serviceLoadError, setServiceLoadError] = useState("");
+=======
+>>>>>>> origin/main
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return true;
     return localStorage.getItem("theme") !== "light";
@@ -65,6 +75,7 @@ export function Navbar() {
   const isHeroPage = location.pathname === "/";
 
   useEffect(() => {
+<<<<<<< HEAD
     Promise.all([adminApi.getServices(), adminApi.getServiceCategories()])
       .then(([loadedServices, loadedCategories]) => {
         const mergedServices = [
@@ -93,6 +104,8 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+=======
+>>>>>>> origin/main
     const saved = localStorage.getItem("theme");
 
     if (saved === "light") {
@@ -231,7 +244,11 @@ export function Navbar() {
                           className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[720px] max-h-[60vh] overflow-y-auto bg-white dark:bg-[#0F172A] rounded-2xl shadow-2xl border border-black/8 dark:border-white/8 p-6"
                         >
                           <div className="grid grid-cols-3 gap-6">
+<<<<<<< HEAD
                             {serviceCategoryGroups.map((cat) => (
+=======
+                            {serviceCategories.map((cat) => (
+>>>>>>> origin/main
                               <div key={cat.label}>
                                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">{cat.label}</p>
                                 <div className="space-y-0.5">
@@ -254,7 +271,10 @@ export function Navbar() {
                               </div>
                             ))}
                           </div>
+<<<<<<< HEAD
                           {serviceLoadError && <p role="status" className="mt-4 text-xs text-slate-400">{serviceLoadError}</p>}
+=======
+>>>>>>> origin/main
                           <div className="mt-5 pt-5 border-t border-slate-100 dark:border-white/8 flex items-center justify-between">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Not sure where to start? Let us guide you.</p>
                             <Link

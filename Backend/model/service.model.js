@@ -21,6 +21,7 @@ const processSchema = new mongoose.Schema(
   { _id: false }
 );
 
+<<<<<<< HEAD
 const pricingPlanSchema = new mongoose.Schema(
   {
     name: {
@@ -46,6 +47,8 @@ const pricingPlanSchema = new mongoose.Schema(
   { _id: false }
 );
 
+=======
+>>>>>>> origin/main
 const serviceSchema = new mongoose.Schema(
   {
     slug: {
@@ -92,10 +95,13 @@ const serviceSchema = new mongoose.Schema(
       type: [processSchema],
       default: [],
     },
+<<<<<<< HEAD
     pricing: {
       type: [pricingPlanSchema],
       default: [],
     },
+=======
+>>>>>>> origin/main
     price: {
       type: String,
       trim: true,

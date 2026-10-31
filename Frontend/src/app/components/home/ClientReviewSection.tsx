@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { Play } from "lucide-react";
 import { testimonials } from "../../../data/testimonials";
@@ -15,6 +16,12 @@ const defaultReviews: AdminTestimonial[] = testimonials.map((testimonial) => ({
   serviceType: testimonial.role || "Digital services",
   rating: testimonial.rating,
 }));
+=======
+import { useState } from "react";
+import { Play } from "lucide-react";
+import { testimonials } from "../../../data/testimonials";
+import { Dialog, DialogContent } from "../ui/dialog";
+>>>>>>> origin/main
 
 function normalizeVideoUrl(url: string) {
   if (!url) return url;
@@ -46,6 +53,7 @@ function getVideoThumbnail(url: string) {
 export function ClientReviewSection() {
   const [mediaSrc, setMediaSrc] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"video" | "image" | "none" | null>(null);
+<<<<<<< HEAD
   const [reviews, setReviews] = useState(defaultReviews);
 
   useEffect(() => {
@@ -63,6 +71,12 @@ export function ClientReviewSection() {
       active = false;
     };
   }, []);
+=======
+
+  // Always show up to 6 cards (no navigation)
+  const perPage = 6;
+  const visible = testimonials.slice(0, perPage);
+>>>>>>> origin/main
 
   return (
     <section className="pb-24 text-white overflow-hidden">
@@ -73,17 +87,26 @@ export function ClientReviewSection() {
           <p className="mt-3 text-slate-300">Real people. Real stories. Real results with WebMarkio.</p>
         </div>
 
+<<<<<<< HEAD
         {reviews.length === 0 ? (
           <p className="py-12 text-center text-slate-400">Client reviews will appear here soon.</p>
         ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {reviews.map((t) => (
+=======
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {visible.map((t) => (
+>>>>>>> origin/main
             <div key={t.id} className="p-6 bg-[#071025]/50 border border-white/5 rounded-2xl">
               <div className="relative rounded-xl overflow-hidden mb-4 bg-slate-900">
                 {t.video && isVideoUrl(t.video) ? (
                   <img
                     src={getVideoThumbnail(t.video)}
+<<<<<<< HEAD
                     alt={t.name || "Client video"}
+=======
+                    alt={t.name}
+>>>>>>> origin/main
                     className="w-full h-44 object-cover opacity-60"
                   />
                 ) : (
@@ -114,6 +137,7 @@ export function ClientReviewSection() {
               </div>
 
               <div className="flex items-center gap-3 mb-3">
+<<<<<<< HEAD
                 {t.image ? (
                   <img src={t.image} alt={t.name || "Client"} className="w-12 h-12 rounded-full object-cover border border-white/10" />
                 ) : (
@@ -126,18 +150,31 @@ export function ClientReviewSection() {
                 <div className="text-sm text-slate-400">
                   {[t.role, t.company].filter(Boolean).join(" — ") || t.serviceType}
                 </div>
+=======
+                <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full object-cover border border-white/10" />
+                <div>
+                  <div className="font-semibold">{t.name}</div>
+                  <div className="text-sm text-slate-400">{t.role} — {t.company}</div>
+>>>>>>> origin/main
                 </div>
               </div>
 
               <p className="text-slate-300 mb-4 line-clamp-4">{t.text}</p>
 
               <div className="mt-4">
+<<<<<<< HEAD
                 <span className="inline-block px-3 py-1 text-sm bg-violet-900/40 text-violet-300 rounded-full">{t.serviceType}</span>
+=======
+                <span className="inline-block px-3 py-1 text-sm bg-violet-900/40 text-violet-300 rounded-full">Website Design</span>
+>>>>>>> origin/main
               </div>
             </div>
           ))}
         </div>
+<<<<<<< HEAD
         )}
+=======
+>>>>>>> origin/main
 
         {/* No navigation controls — showing fixed set of cards */}
       </div>

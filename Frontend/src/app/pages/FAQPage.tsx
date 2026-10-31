@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Minus } from "lucide-react";
@@ -6,10 +7,20 @@ import { SectionHeading } from "../components/shared/SectionHeading";
 import { PageTransition } from "../components/shared/PageTransition";
 import { CTASection } from "../components/home/CTASection";
 import { adminApi } from "../../lib/adminApi";
+=======
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Plus, Minus } from "lucide-react";
+import { faqItems, faqCategories } from "../../data/faq";
+import { SectionHeading } from "../components/shared/SectionHeading";
+import { PageTransition } from "../components/shared/PageTransition";
+import { CTASection } from "../components/home/CTASection";
+>>>>>>> origin/main
 
 export function FAQPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
+<<<<<<< HEAD
   const [faqItems, setFaqItems] = useState(defaultFaqItems);
 
   useEffect(() => {
@@ -30,6 +41,9 @@ export function FAQPage() {
 
   const faqCategories = ["All", ...new Set(faqItems.map((item) => item.category).filter(Boolean))];
   const filtered = activeCategory === "All" ? faqItems : faqItems.filter((f) => f.category === activeCategory);
+=======
+  const filtered = activeCategory === "All" ? faqItems : faqItems.filter(f => f.category === activeCategory);
+>>>>>>> origin/main
 
   return (
     <PageTransition>

@@ -1,4 +1,5 @@
 import { ArrowRight, CheckCircle, Play, TrendingUp, Users } from 'lucide-react';
+<<<<<<< HEAD
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router';
 import { DEFAULT_BANNER_CONTENT } from '../../../data/banner';
@@ -22,6 +23,13 @@ const Banner = () => {
         };
     }, []);
 
+=======
+import React from 'react'
+import { Link } from 'react-router';
+
+const Banner = () => {
+    const clients = ["TechFlow", "Nexora", "BuildStack", "CloudBase", "DataSync", "InnovaX", "PulseAI", "Zenvoy"];
+>>>>>>> origin/main
     return (
         <>
 
@@ -43,6 +51,7 @@ const Banner = () => {
                             </div>
 
                             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-slate-900 dark:text-white">
+<<<<<<< HEAD
                                 {content.headlineBefore}{" "}
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
                                     {content.headlineHighlight}
@@ -52,6 +61,17 @@ const Banner = () => {
 
                             <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed max-w-lg">
                                 {content.description}
+=======
+                                We Build{" "}
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
+                                    Powerful
+                                </span>{" "}
+                                Digital Experiences
+                            </h1>
+
+                            <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed max-w-lg">
+                                WebMarkio Agency helps businesses grow with modern websites, UI/UX design, SEO and digital marketing solutions that convert visitors into loyal clients.
+>>>>>>> origin/main
                             </p>
 
                             <div className="flex flex-wrap gap-4">
@@ -76,9 +96,15 @@ const Banner = () => {
                             </div>
 
                             <div className="flex gap-10 pt-2">
+<<<<<<< HEAD
                                 {content.stats.map(({ value, label }, index) => (
                                     <div key={index}>
                                         <div className="text-3xl font-black text-slate-900 dark:text-white">{value}</div>
+=======
+                                {[{ val: "100+", label: "Projects" }, { val: "50+", label: "Clients" }, { val: "5★", label: "Rating" }].map(({ val, label }) => (
+                                    <div key={label}>
+                                        <div className="text-3xl font-black text-slate-900 dark:text-white">{val}</div>
+>>>>>>> origin/main
                                         <div className="text-slate-600 dark:text-slate-500 text-sm mt-0.5">{label}</div>
                                     </div>
                                 ))}

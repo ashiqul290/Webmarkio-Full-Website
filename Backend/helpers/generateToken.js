@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+<<<<<<< HEAD
 module.exports = function generateToken(id, tokenVersion = 0) {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
@@ -7,4 +8,9 @@ module.exports = function generateToken(id, tokenVersion = 0) {
   }
 
   return jwt.sign({ id, tokenVersion }, secret, { expiresIn: "7d" });
+=======
+module.exports = function generateToken(id) {
+  const secret = process.env.JWT_SECRET || 'change_this_secret_in_production';
+  return jwt.sign({ id }, secret, { expiresIn: '7d' });
+>>>>>>> origin/main
 };
