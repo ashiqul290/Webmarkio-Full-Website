@@ -6,7 +6,6 @@ const {
   updateService,
   deleteService,
 } = require('../../../controller/service.controller');
-<<<<<<< HEAD
 const {
   getServiceCategories,
   updateServiceCategories,
@@ -16,11 +15,6 @@ const service = express.Router();
 
 service.get('/categories', getServiceCategories);
 service.put('/categories', protect, adminOnly, updateServiceCategories);
-=======
-const { protect, adminOnly } = require('../../../middleware/auth.middleware');
-const service = express.Router();
-
->>>>>>> origin/main
 service.post('/add-service', protect, adminOnly, AddServiceController);
 service.get('/all-services', getAllServices);
 service.get('/single-service/:slug', getServiceBySlug);

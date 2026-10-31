@@ -1,15 +1,9 @@
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
-=======
->>>>>>> origin/main
 import { useParams, Link } from "react-router";
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, CheckCircle, ExternalLink, Globe, Briefcase, Target, Palette, Zap, UtensilsCrossed, GraduationCap, Heart, ShoppingCart, TrendingUp, Search, BarChart2, Sparkles, Layers, Building2 } from "lucide-react";
 import { getServiceBySlug } from "../../data/services";
-<<<<<<< HEAD
 import { adminApi, type Service as AdminService } from "../../lib/adminApi";
-=======
->>>>>>> origin/main
 import { portfolioItems } from "../../data/portfolio";
 import { pricingPlans } from "../../data/pricing";
 import { PageTransition } from "../components/shared/PageTransition";
@@ -21,14 +15,11 @@ const iconMap: Record<string, React.ElementType> = {
   GraduationCap, Heart, ShoppingCart, TrendingUp, Search, BarChart2, Sparkles, Layers
 };
 
-<<<<<<< HEAD
 const isWebsiteDevelopmentCategory = (category: string) => {
   const normalizedCategory = category.replace(/[\s_-]/g, "").toLocaleLowerCase();
   return normalizedCategory === "webdevelopment" || normalizedCategory === "websitedevelopment";
 };
 
-=======
->>>>>>> origin/main
 const websitePricing: Record<string, { type: string; prices: [string, string, string] }> = {
   "business-website": { type: "Business & Company", prices: ["$499", "$899", "$1,499"] },
   "corporate-website": { type: "Business & Company", prices: ["$499", "$899", "$1,499"] },
@@ -81,7 +72,6 @@ const businessWebsitePlans = [
 
 export function ServiceDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-<<<<<<< HEAD
   const staticService = getServiceBySlug(slug || "");
   const [databaseService, setDatabaseService] = useState<AdminService | null>(null);
   const [lookupComplete, setLookupComplete] = useState(false);
@@ -226,12 +216,6 @@ export function ServiceDetailPage() {
     );
   }
 
-=======
-  const service = getServiceBySlug(slug || "");
-
-  if (!service) return <NotFoundPage />;
-
->>>>>>> origin/main
   const Icon = iconMap[service.icon] || Globe;
   const relatedProjects = service.category === "Website Development"
     ? portfolioItems.filter((project) => project.category === service.title)

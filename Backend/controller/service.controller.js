@@ -13,10 +13,7 @@ const serviceFields = [
   "features",
   "benefits",
   "process",
-<<<<<<< HEAD
   "pricing",
-=======
->>>>>>> origin/main
   "price",
   "image",
 ];
@@ -34,19 +31,13 @@ exports.AddServiceController = asyncHandler(async (req, res) => {
 });
 
 exports.getAllServices = asyncHandler(async (req, res) => {
-<<<<<<< HEAD
   res.set("Cache-Control", "no-store");
-=======
->>>>>>> origin/main
   const services = await Service.find().sort({ createdAt: -1 });
   return apiResponse(res, 200, "Services fetched successfully", services);
 });
 
 exports.getServiceBySlug = asyncHandler(async (req, res) => {
-<<<<<<< HEAD
   res.set("Cache-Control", "no-store");
-=======
->>>>>>> origin/main
   const service = await Service.findOne({ slug: req.params.slug.toLowerCase() });
   if (!service) return apiResponse(res, 404, "Service not found", null);
 

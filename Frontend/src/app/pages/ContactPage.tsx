@@ -24,11 +24,7 @@ export function ContactPage() {
     setIsSubmitting(true);
 
     try {
-<<<<<<< HEAD
       const response = await fetch(`${API_BASE_URL}/contact/add-contact`, {
-=======
-      const response = await fetch(`${API_BASE_URL}/contact`, {
->>>>>>> origin/main
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

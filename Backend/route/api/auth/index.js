@@ -1,5 +1,4 @@
 const express = require('express');
-<<<<<<< HEAD
 const {
   signupController,
   loginController,
@@ -16,15 +15,5 @@ auth.post('/login', authRateLimit, loginController);
 
 auth.get('/me', protect, currentUserController);
 auth.post('/logout', protect, logoutController);
-=======
-const { signupController, loginController, logoutController } = require('../../../controller/auth.controller');
-const auth = express.Router();
-
-auth.post('/signup', signupController);
-
-auth.post('/login', loginController);
-
-auth.post('/logout', logoutController);
->>>>>>> origin/main
 
 module.exports = auth;

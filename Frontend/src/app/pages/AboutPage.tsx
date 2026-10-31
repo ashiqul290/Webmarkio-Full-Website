@@ -5,11 +5,7 @@ import { SectionHeading } from "../components/shared/SectionHeading";
 import { PageTransition } from "../components/shared/PageTransition";
 import { CTASection } from "../components/home/CTASection";
 const imgside = new URL("../assets/right_side_image.png", import.meta.url).href;
-<<<<<<< HEAD
 const imgceo = new URL("../assets/1f21c515-67d3-4cf7-941f-9fa84facf8bb.png", import.meta.url).href;
-=======
-const imgceo = new URL("../assets/2127feef-6ae3-4d29-8ed8-e60e9533b30c.png", import.meta.url).href;
->>>>>>> origin/main
 
 
 const timeline = [

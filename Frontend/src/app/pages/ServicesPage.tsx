@@ -1,17 +1,10 @@
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
-=======
-import { useState } from "react";
->>>>>>> origin/main
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { ArrowRight, Globe, Briefcase, Target, Palette, Zap, UtensilsCrossed, GraduationCap, Heart, ShoppingCart, TrendingUp, Search, BarChart2, Sparkles, Layers, Building2 } from "lucide-react";
 import { services, serviceCategories } from "../../data/services";
-<<<<<<< HEAD
 import type { Service } from "../../types";
 import { adminApi } from "../../lib/adminApi";
-=======
->>>>>>> origin/main
 import { SectionHeading } from "../components/shared/SectionHeading";
 import { PageTransition } from "../components/shared/PageTransition";
 import { CTASection } from "../components/home/CTASection";
@@ -23,7 +16,6 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function ServicesPage() {
   const [activeCategory, setActiveCategory] = useState("All");
-<<<<<<< HEAD
   const [remoteServices, setRemoteServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState(serviceCategories);
   const [loadError, setLoadError] = useState("");
@@ -63,9 +55,6 @@ export function ServicesPage() {
   const filtered = activeCategory === "All"
     ? displayedServices
     : displayedServices.filter((service) => service.category === activeCategory);
-=======
-  const filtered = activeCategory === "All" ? services : services.filter(s => s.category === activeCategory);
->>>>>>> origin/main
 
   return (
     <PageTransition>
@@ -90,11 +79,7 @@ export function ServicesPage() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Category Filter */}
           <div className="flex flex-wrap justify-center gap-2 mb-14">
-<<<<<<< HEAD
             {categories.map((cat) => (
-=======
-            {serviceCategories.map((cat) => (
->>>>>>> origin/main
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
@@ -109,10 +94,7 @@ export function ServicesPage() {
             ))}
           </div>
 
-<<<<<<< HEAD
           {loadError && <p role="status" className="mb-6 text-center text-sm text-slate-500">Showing saved services where available. {loadError}</p>}
-=======
->>>>>>> origin/main
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((service, i) => {
               const Icon = iconMap[service.icon] || Globe;
