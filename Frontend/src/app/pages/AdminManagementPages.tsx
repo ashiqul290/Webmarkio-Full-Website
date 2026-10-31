@@ -252,7 +252,32 @@ export function AdminProfilePage() {
   );
 }
 
-const emptyService: Omit<Service, "_id"> = {
+const servicePlanNames = ["Basic", "Standard", "Premium"] as const;
+const emptyProcessStep = { step: 1, title: "", description: "" };
+const isWebsiteDevelopmentCategory = (category: string) => {
+  const normalizedCategory = category.replace(/[\s_-]/g, "").toLocaleLowerCase();
+  return normalizedCategory === "webdevelopment" || normalizedCategory === "websitedevelopment";
+};
+const emptyPricingPlan = (name: (typeof servicePlanNames)[number]) => ({
+  name,
+  price: "",
+  description: "",
+  features: [""],
+});
+
+type ServiceDraft = Omit<Service, "_id"> & {
+  features: string[];
+  benefits: string[];
+  process: { step: number; title: string; description: string }[];
+  pricing: {
+    name: (typeof servicePlanNames)[number];
+    price: string;
+    description: string;
+    features: string[];
+  }[];
+};
+
+const emptyService: ServiceDraft = {
   slug: "",
   title: "",
   shortDescription: "",
@@ -261,13 +286,17 @@ const emptyService: Omit<Service, "_id"> = {
   category: "",
   price: "",
   image: "",
+  features: Array(6).fill(""),
+  benefits: Array(4).fill(""),
+  process: [emptyProcessStep],
+  pricing: servicePlanNames.map(emptyPricingPlan),
 };
 
 export function AdminServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [categoryDraft, setCategoryDraft] = useState("");
-  const [draft, setDraft] = useState<Omit<Service, "_id">>(emptyService);
+  const [draft, setDraft] = useState<ServiceDraft>(emptyService);
   const [editingId, setEditingId] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -327,6 +356,20 @@ export function AdminServicesPage() {
       category: service.category,
       price: service.price,
       image: service.image,
+      features: Array.from({ length: 6 }, (_, index) => service.features?.[index] ?? ""),
+      benefits: Array.from({ length: 4 }, (_, index) => service.benefits?.[index] ?? ""),
+      process: service.process?.length
+        ? service.process.map((step, index) => ({ ...step, step: index + 1 }))
+        : [emptyProcessStep],
+      pricing: servicePlanNames.map((name) => {
+        const plan = service.pricing?.find((item) => item.name === name);
+        return {
+          name,
+          price: plan?.price ?? "",
+          description: plan?.description ?? "",
+          features: plan?.features?.length ? plan.features : [""],
+        };
+      }),
     } : emptyService);
     setShowForm(true);
   };
@@ -336,9 +379,31 @@ export function AdminServicesPage() {
     setSaving(true);
     setError("");
     try {
+      const websiteDevelopment = isWebsiteDevelopmentCategory(draft.category.trim());
+      const pricing = websiteDevelopment
+        ? draft.pricing.map((plan) => ({
+          ...plan,
+          features: plan.features.map((feature) => feature.trim()).filter(Boolean),
+        }))
+        : [];
+      const serviceDraft = {
+        ...draft,
+        features: draft.features.map((feature) => feature.trim()),
+        benefits: draft.benefits.map((benefit) => benefit.trim()),
+        process: draft.process.map((step, index) => ({
+          ...step,
+          step: index + 1,
+          title: step.title.trim(),
+          description: step.description.trim(),
+        })),
+        pricing,
+        price: websiteDevelopment
+          ? `From $${draft.pricing[0].price}`
+          : "Contact us for a quote",
+      };
       const service = editingId
-        ? await adminApi.updateService(editingId, draft)
-        : await adminApi.addService(draft);
+        ? await adminApi.updateService(editingId, serviceDraft)
+        : await adminApi.addService(serviceDraft);
       setServices((current) => editingId
         ? current.map((item) => item._id === editingId ? service : item)
         : [service, ...current]);
@@ -361,19 +426,19 @@ export function AdminServicesPage() {
     }
   };
 
-  const field = (key: keyof typeof emptyService, label: string, required = true) => (
+  const field = (key: "title" | "slug" | "shortDescription" | "description" | "icon" | "image", label: string) => (
     <label key={key} className="block text-xs font-medium text-zinc-300">
       {label}
       {key === "description" || key === "shortDescription" ? (
         <textarea
-          required={required}
+          required
           value={draft[key]}
           onChange={(event) => setDraft((current) => ({ ...current, [key]: event.target.value }))}
           className="mt-2 min-h-20 w-full rounded-lg border border-white/10 bg-[#101016] px-3 py-2 text-sm text-white outline-none focus:border-[#10B981]"
         />
       ) : (
         <input
-          required={required}
+          required
           value={draft[key]}
           onChange={(event) => setDraft((current) => ({ ...current, [key]: event.target.value }))}
           className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#101016] px-3 text-sm text-white outline-none focus:border-[#10B981]"
@@ -431,6 +496,7 @@ export function AdminServicesPage() {
           {field("slug", "Slug")}
           {field("shortDescription", "Short description")}
           {field("description", "Description")}
+          {field("image", "Main image URL")}
           {field("icon", "Icon key")}
           <label className="block text-xs font-medium text-zinc-300">
             Category
@@ -444,8 +510,200 @@ export function AdminServicesPage() {
               {categories.map((category) => <option key={category} value={category}>{category}</option>)}
             </select>
           </label>
-          {field("price", "Price")}
-          {field("image", "Image URL")}
+
+          <fieldset className="space-y-3 sm:col-span-2">
+            <legend className="text-base font-semibold text-white">What's Included</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {draft.features.map((feature, index) => (
+                <label key={index} className="block text-xs font-medium text-zinc-300">
+                  Item {index + 1}
+                  <input
+                    required
+                    value={feature}
+                    onChange={(event) => setDraft((current) => ({
+                      ...current,
+                      features: current.features.map((item, itemIndex) => itemIndex === index ? event.target.value : item),
+                    }))}
+                    className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#101016] px-3 text-sm text-white outline-none focus:border-[#10B981]"
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-3 sm:col-span-2">
+            <legend className="text-base font-semibold text-white">Key Benefits</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {draft.benefits.map((benefit, index) => (
+                <label key={index} className="block text-xs font-medium text-zinc-300">
+                  Benefit {index + 1}
+                  <input
+                    required
+                    value={benefit}
+                    onChange={(event) => setDraft((current) => ({
+                      ...current,
+                      benefits: current.benefits.map((item, itemIndex) => itemIndex === index ? event.target.value : item),
+                    }))}
+                    className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#101016] px-3 text-sm text-white outline-none focus:border-[#10B981]"
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset className="space-y-3 sm:col-span-2">
+            <div className="flex items-center justify-between gap-3">
+              <legend className="text-base font-semibold text-white">Our Process</legend>
+              <button
+                type="button"
+                onClick={() => setDraft((current) => ({
+                  ...current,
+                  process: [...current.process, { step: current.process.length + 1, title: "", description: "" }],
+                }))}
+                className="rounded-lg border border-white/10 px-3 py-2 text-sm text-zinc-200 hover:border-[#10B981]"
+              >
+                Add step
+              </button>
+            </div>
+            {draft.process.map((step, index) => (
+              <div key={index} className="grid gap-3 rounded-lg border border-white/10 p-3 sm:grid-cols-2">
+                <label className="block text-xs font-medium text-zinc-300">
+                  Step {index + 1} title
+                  <input
+                    required
+                    value={step.title}
+                    onChange={(event) => setDraft((current) => ({
+                      ...current,
+                      process: current.process.map((item, itemIndex) => itemIndex === index ? { ...item, title: event.target.value } : item),
+                    }))}
+                    className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-[#101016] px-3 text-sm text-white outline-none focus:border-[#10B981]"
+                  />
+                </label>
+                <label className="block text-xs font-medium text-zinc-300">
+                  Step {index + 1} description
+                  <textarea
+                    required
+                    value={step.description}
+                    onChange={(event) => setDraft((current) => ({
+                      ...current,
+                      process: current.process.map((item, itemIndex) => itemIndex === index ? { ...item, description: event.target.value } : item),
+                    }))}
+                    className="mt-2 min-h-20 w-full rounded-lg border border-white/10 bg-[#101016] px-3 py-2 text-sm text-white outline-none focus:border-[#10B981]"
+                  />
+                </label>
+                {draft.process.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setDraft((current) => ({
+                      ...current,
+                      process: current.process.filter((_, itemIndex) => itemIndex !== index),
+                    }))}
+                    className="justify-self-start text-xs text-rose-300 hover:text-white sm:col-span-2"
+                  >
+                    Remove step
+                  </button>
+                )}
+              </div>
+            ))}
+          </fieldset>
+
+          {isWebsiteDevelopmentCategory(draft.category.trim()) ? (
+            <fieldset className="space-y-3 sm:col-span-2">
+              <legend className="text-base font-semibold text-white">Pricing</legend>
+              <p className="text-sm text-zinc-400">Add a price, description, and features for each website development plan.</p>
+              {draft.pricing.map((plan, index) => (
+                <div key={plan.name} className="grid gap-3 rounded-lg border border-white/10 p-4 sm:grid-cols-2">
+                  <h4 className="text-sm font-semibold text-white sm:col-span-2">{plan.name} Plan</h4>
+                  <label className="block text-xs font-medium text-zinc-300">
+                    Price (USD)
+                    <div className="mt-2 flex h-10 items-center rounded-lg border border-white/10 bg-[#101016] px-3 focus-within:border-[#10B981]">
+                      <span className="text-sm text-zinc-400">$</span>
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={plan.price}
+                        onChange={(event) => setDraft((current) => ({
+                          ...current,
+                          pricing: current.pricing.map((item, itemIndex) => itemIndex === index ? { ...item, price: event.target.value } : item),
+                        }))}
+                        className="w-full bg-transparent px-2 text-sm text-white outline-none"
+                      />
+                    </div>
+                  </label>
+                  <label className="block text-xs font-medium text-zinc-300 sm:col-span-2">
+                    Description
+                    <textarea
+                      required
+                      value={plan.description}
+                      onChange={(event) => setDraft((current) => ({
+                        ...current,
+                        pricing: current.pricing.map((item, itemIndex) => itemIndex === index ? { ...item, description: event.target.value } : item),
+                      }))}
+                      className="mt-2 min-h-20 w-full rounded-lg border border-white/10 bg-[#101016] px-3 py-2 text-sm text-white outline-none focus:border-[#10B981]"
+                    />
+                  </label>
+                  <div className="space-y-3 sm:col-span-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <h5 className="text-xs font-medium text-zinc-300">Plan features</h5>
+                      <button
+                        type="button"
+                        onClick={() => setDraft((current) => ({
+                          ...current,
+                          pricing: current.pricing.map((item, itemIndex) => itemIndex === index
+                            ? { ...item, features: [...item.features, ""] }
+                            : item),
+                        }))}
+                        className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-zinc-200 hover:border-[#10B981]"
+                      >
+                        Add feature
+                      </button>
+                    </div>
+                    {plan.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-center gap-2">
+                        <input
+                          required
+                          value={feature}
+                          aria-label={`${plan.name} plan feature ${featureIndex + 1}`}
+                          onChange={(event) => setDraft((current) => ({
+                            ...current,
+                            pricing: current.pricing.map((item, itemIndex) => itemIndex === index
+                              ? {
+                                ...item,
+                                features: item.features.map((value, valueIndex) => valueIndex === featureIndex ? event.target.value : value),
+                              }
+                              : item),
+                          }))}
+                          className="h-10 w-full rounded-lg border border-white/10 bg-[#101016] px-3 text-sm text-white outline-none focus:border-[#10B981]"
+                        />
+                        {plan.features.length > 1 && (
+                          <button
+                            type="button"
+                            aria-label={`Remove ${plan.name} plan feature ${featureIndex + 1}`}
+                            onClick={() => setDraft((current) => ({
+                              ...current,
+                              pricing: current.pricing.map((item, itemIndex) => itemIndex === index
+                                ? { ...item, features: item.features.filter((_, valueIndex) => valueIndex !== featureIndex) }
+                                : item),
+                            }))}
+                            className="px-2 text-rose-300 hover:text-white"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </fieldset>
+          ) : (
+            <p className="text-sm text-zinc-400 sm:col-span-2">
+              Other service categories will show a “Contact us for a quote” message instead of pricing.
+            </p>
+          )}
+
           <div className="flex justify-end gap-2 sm:col-span-2">
             <button type="button" onClick={() => setShowForm(false)} className="rounded-lg border border-white/10 px-4 py-2 text-sm text-zinc-300">Cancel</button>
             <button type="submit" disabled={saving} className="rounded-lg bg-[#10B981] px-4 py-2 text-sm font-semibold text-[#07120E] disabled:opacity-60">

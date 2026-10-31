@@ -77,6 +77,12 @@ export type Service = {
   features?: string[];
   benefits?: string[];
   process?: { step: number; title: string; description: string }[];
+  pricing?: {
+    name: "Basic" | "Standard" | "Premium";
+    price: string;
+    description: string;
+    features: string[];
+  }[];
 };
 
 export type ServiceCategory = string;

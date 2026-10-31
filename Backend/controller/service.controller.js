@@ -13,6 +13,7 @@ const serviceFields = [
   "features",
   "benefits",
   "process",
+  "pricing",
   "price",
   "image",
 ];

@@ -15,6 +15,11 @@ const iconMap: Record<string, React.ElementType> = {
   GraduationCap, Heart, ShoppingCart, TrendingUp, Search, BarChart2, Sparkles, Layers
 };
 
+const isWebsiteDevelopmentCategory = (category: string) => {
+  const normalizedCategory = category.replace(/[\s_-]/g, "").toLocaleLowerCase();
+  return normalizedCategory === "webdevelopment" || normalizedCategory === "websitedevelopment";
+};
+
 const websitePricing: Record<string, { type: string; prices: [string, string, string] }> = {
   "business-website": { type: "Business & Company", prices: ["$499", "$899", "$1,499"] },
   "corporate-website": { type: "Business & Company", prices: ["$499", "$899", "$1,499"] },
@@ -85,15 +90,16 @@ export function ServiceDetailPage() {
     return () => { active = false; };
   }, [slug, staticService]);
 
-  const service = staticService ?? databaseService;
+  const service = databaseService ?? staticService;
 
   if (!service && !lookupComplete) {
     return <PageTransition><div className="min-h-[60vh] flex items-center justify-center text-slate-500">Loading service…</div></PageTransition>;
   }
   if (!service) return <NotFoundPage />;
 
-  if (!staticService && databaseService) {
+  if (databaseService) {
     const Icon = iconMap[databaseService.icon] || Globe;
+    const isWebsiteDevelopment = isWebsiteDevelopmentCategory(databaseService.category);
     return (
       <PageTransition>
         <section className="pt-32 pb-20 bg-[#0F172A]">
@@ -108,7 +114,13 @@ export function ServiceDetailPage() {
                 </div>
                 <h1 className="mb-4 text-4xl font-bold text-white">{databaseService.title}</h1>
                 <p className="mb-6 leading-relaxed text-slate-300">{databaseService.description}</p>
-                <p className="mb-6 text-lg font-semibold text-blue-300">{databaseService.price}</p>
+                <p className="mb-6 text-lg font-semibold text-blue-300">
+                  {isWebsiteDevelopment
+                    ? databaseService.pricing?.[0]?.price
+                      ? `Starting at $${databaseService.pricing[0].price}`
+                      : databaseService.price || "Contact us for pricing"
+                    : "Contact us for a quote"}
+                </p>
                 <Link to="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-6 py-3 font-semibold text-white">
                   Get Started <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -131,6 +143,74 @@ export function ServiceDetailPage() {
             ) : <p className="text-slate-500">Contact us to discuss the service details.</p>}
           </div>
         </section>
+        {!!databaseService.benefits?.length && (
+          <section className="bg-slate-50 py-16 dark:bg-[#0B1220]">
+            <div className="mx-auto max-w-[1100px] px-4 sm:px-6 lg:px-8">
+              <h2 className="mb-6 text-2xl font-bold text-[#0F172A] dark:text-white">Key Benefits</h2>
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {databaseService.benefits.map((benefit, index) => (
+                  <li key={`${benefit}-${index}`} className="rounded-xl border border-blue-100 bg-white p-4 text-slate-700 dark:border-blue-500/20 dark:bg-white/5 dark:text-slate-200">
+                    <span className="mr-3 font-bold text-[#2563EB]">0{index + 1}</span>{benefit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+        {!!databaseService.process?.length && (
+          <section className="bg-white py-16 dark:bg-[#0F172A]">
+            <div className="mx-auto max-w-[1100px] px-4 sm:px-6 lg:px-8">
+              <h2 className="mb-6 text-2xl font-bold text-[#0F172A] dark:text-white">Our Process</h2>
+              <ol className="space-y-4">
+                {databaseService.process.map((step) => (
+                  <li key={`${step.step}-${step.title}`} className="flex gap-4 rounded-xl bg-slate-50 p-5 dark:bg-white/5">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#2563EB] font-bold text-white">{step.step}</span>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">{step.title}</h3>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{step.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        )}
+        {isWebsiteDevelopment && (
+          <section className="bg-[#0A1020] py-16">
+            <div className="mx-auto max-w-[1100px] px-4 sm:px-6 lg:px-8">
+              <div className="mb-10 text-center">
+                <span className="mb-3 inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-300">Pricing Plans</span>
+                <h2 className="text-3xl font-bold text-white">Choose Your Plan</h2>
+              </div>
+              {databaseService.pricing?.length ? (
+                <div className="grid gap-5 md:grid-cols-3">
+                  {databaseService.pricing.map((plan) => (
+                    <article key={plan.name} className="flex flex-col rounded-2xl border border-white/10 bg-[#11182B] p-6 text-white">
+                      <h3 className="text-lg font-semibold">{plan.name}</h3>
+                      <p className="mt-4 text-3xl font-bold">${plan.price}</p>
+                      <p className="mt-3 flex-1 text-sm leading-6 text-slate-400">{plan.description}</p>
+                      {!!plan.features?.length && (
+                        <ul className="mt-5 space-y-3">
+                          {plan.features.map((feature, index) => (
+                            <li key={`${feature}-${index}`} className="flex items-start gap-2 text-sm text-slate-300">
+                              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#22C55E]" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <Link to="/contact" className="mt-6 block rounded-full bg-[#2563EB] px-5 py-3 text-center text-sm font-semibold text-white hover:bg-blue-600">
+                        Get Started
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-slate-400">Contact us to discuss pricing for this service.</p>
+              )}
+            </div>
+          </section>
+        )}
         <CTASection />
       </PageTransition>
     );

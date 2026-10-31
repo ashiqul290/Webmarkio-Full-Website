@@ -21,6 +21,31 @@ const processSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const pricingPlanSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      enum: ["Basic", "Starter", "Standard", "Premium"],
+      required: [true, "pricing plan name is required"],
+    },
+    price: {
+      type: String,
+      trim: true,
+      required: [true, "pricing plan price is required"],
+    },
+    description: {
+      type: String,
+      trim: true,
+      required: [true, "pricing plan description is required"],
+    },
+    features: {
+      type: [{ type: String, trim: true }],
+      default: [],
+    },
+  },
+  { _id: false }
+);
+
 const serviceSchema = new mongoose.Schema(
   {
     slug: {
@@ -65,6 +90,10 @@ const serviceSchema = new mongoose.Schema(
     },
     process: {
       type: [processSchema],
+      default: [],
+    },
+    pricing: {
+      type: [pricingPlanSchema],
       default: [],
     },
     price: {
